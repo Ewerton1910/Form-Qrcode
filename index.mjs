@@ -6,7 +6,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   const turno = document.getElementById("turno").value;
 
   // Substitua pelo número do WhatsApp (internacional, sem +, sem espaços ou traços)
-  const numeroWhatsApp = "5511999999999"; // Ex: 55 = Brasil, 11 = DDD, 999999999 = número
+  const numeroWhatsApp = "5584987443832"; // Ex: 55 = Brasil, 11 = DDD, 999999999 = número
 
   // Formata a mensagem — %0A é quebra de linha
   const mensagem =
