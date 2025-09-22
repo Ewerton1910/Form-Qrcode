@@ -1,11 +1,9 @@
-/* REINICIA ESTILOS PADRÃO */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ESTILOS GERAIS */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -38,13 +36,13 @@ p {
   font-size: 1rem;
 }
 
-/* GRUPOS DE FORMULÁRIO */
 .form-group {
   text-align: left;
   margin-bottom: 20px;
 }
 
-.form-group label {
+.form-group label,
+.group-label {
   display: block;
   font-weight: 600;
   color: #444;
@@ -58,7 +56,7 @@ p {
   padding: 14px;
   font-size: 1rem;
   border: 2px solid #e1e5e9;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fafafa;
   transition: border-color 0.3s, background 0.3s;
 }
@@ -68,9 +66,99 @@ p {
   outline: none;
   border-color: #667eea;
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
-/* ESTILO DO BOTÃO */
+/* ESTILO DOS SELECTS */
+.form-group select {
+  background: #fafafa
+    url("image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23555' viewBox='0 0 16 16'%3e%3cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3e%3c/svg%3e")
+    no-repeat right 12px center / 16px 16px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+}
+
+/* ESTILO DOS RADIO BUTTONS - CORRIGIDO PARA SER REDONDO EM TODOS OS DISPOSITIVOS */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  position: relative;
+}
+
+.radio-label input[type="radio"] {
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  margin-right: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: transparent;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom {
+  background: #ffa500; /* Laranja */
+  border-color: #ffa500;
+  box-shadow: 0 0 0 2px white, 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid #ccc;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radio-text {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Destaque ao passar o mouse */
+.radio-label:hover {
+  color: #667eea;
+}
+
+/* Quando selecionado */
+.radio-label input[type="radio"]:checked + .radio-custom + .radio-text {
+  color: #ffa500;
+  font-weight: 600;
+}
+
+/* BOTÃO */
 button {
   width: 100%;
   padding: 16px;
@@ -93,53 +181,43 @@ button:active {
   transform: scale(0.98);
 }
 
-/* RODAPÉ */
 .footer small {
   display: block;
   color: #888;
   font-size: 0.85rem;
 }
 
-/* MEDIA QUERIES - RESPONSIVIDADE */
-
-/* Celulares pequenos (ex: iPhone SE) */
+/* RESPONSIVIDADE */
 @media (max-width: 375px) {
   .container {
     padding: 16px;
   }
-
   h1 {
     font-size: 1.5rem;
   }
-
   button {
     padding: 14px;
     font-size: 1rem;
   }
 }
 
-/* Tablets */
 @media (min-width: 768px) {
   .container {
     padding: 32px;
   }
-
   h1 {
     font-size: 2rem;
   }
-
   button {
     padding: 18px;
     font-size: 1.2rem;
   }
 }
 
-/* Desktop */
 @media (min-width: 1024px) {
   body {
     padding: 32px;
   }
-
   .container {
     max-width: 550px;
   }
