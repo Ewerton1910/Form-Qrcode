@@ -33,7 +33,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   const restaurante = restauranteInput.value;
 
   // 🔥 Substitua pelo seu número (sem +, sem espaços, formato internacional)
-  const numeroWhatsApp = "5584987443832"; // 👈 ALTERE AQUI!
+  const numeroWhatsApp = "5511999999999"; // 👈 ALTERE AQUI!
 
   // 🎨 Mensagem estilizada com emojis e formatação
   const mensagem =
@@ -66,31 +66,53 @@ function formatarTelefone(numero) {
   return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
 }
 
-// ✨ Formatação automática do campo de contato
+// ✨ Formatação automática do campo de contato — COM PARÊNTESES OBRIGATÓRIOS
 document.getElementById("contato").addEventListener("input", function (e) {
-  let valor = e.target.value.replace(/\D/g, "");
+  let valor = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
   const pos = e.target.selectionStart;
   const campo = e.target;
 
-  if (valor.length > 11) valor = valor.slice(0, 11);
-
-  let formatado = valor;
-  if (valor.length > 2) {
-    formatado = `(${valor.slice(0, 2)})`;
-    if (valor.length > 3) {
-      formatado += ` ${valor.slice(2, 7)}`;
-      if (valor.length > 8) {
-        formatado += `-${valor.slice(7)}`;
-      } else {
-        formatado += valor.slice(2);
-      }
-    }
+  // Limita a 11 dígitos
+  if (valor.length > 11) {
+    valor = valor.slice(0, 11);
   }
 
+  let formatado = "";
+
+  // Formata conforme o usuário digita
+  if (valor.length === 0) {
+    formatado = "";
+  } else if (valor.length <= 2) {
+    formatado = `(${valor}`; // Abre parêntese assim que começa a digitar
+  } else if (valor.length <= 7) {
+    formatado = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
+  } else {
+    formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
+  }
+
+  // Define o valor formatado
   campo.value = formatado;
 
+  // Ajusta a posição do cursor para não pular
   setTimeout(() => {
-    campo.selectionStart = campo.selectionEnd =
-      pos + (formatado.length - valor.length);
+    // Calcula nova posição do cursor
+    let novaPos = pos;
+
+    // Se estiver digitando dentro do DDD
+    if (pos <= 3 && valor.length <= 2) {
+      novaPos = pos;
+    } else if (valor.length > 2 && pos <= 5) {
+      // Dentro do espaço após o DDD
+      novaPos = pos;
+    } else {
+      // Ajusta com base na diferença de tamanho
+      novaPos = pos + (formatado.length - valor.length);
+    }
+
+    // Garante que não ultrapasse o final
+    novaPos = Math.min(novaPos, formatado.length);
+
+    campo.selectionStart = novaPos;
+    campo.selectionEnd = novaPos;
   }, 0);
 });
