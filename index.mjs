@@ -63,53 +63,57 @@ function formatarTelefone(numero) {
   return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
 }
 
-// ✨ Formatação automática do campo de contato — COM PARÊNTESES OBRIGATÓRIOS
+// ✨ Formatação automática do campo de contato — COM PARÊNTESES E CURSOR CORRIGIDO
 document.getElementById("contato").addEventListener("input", function (e) {
-  let valor = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
-  const pos = e.target.selectionStart;
-  const campo = e.target;
+    let valor = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
+    const pos = e.target.selectionStart;
+    const campo = e.target;
 
-  // Limita a 11 dígitos
-  if (valor.length > 11) {
-    valor = valor.slice(0, 11);
-  }
-
-  let formatado = "";
-
-  // Formata conforme o usuário digita
-  if (valor.length === 0) {
-    formatado = "";
-  } else if (valor.length <= 2) {
-    formatado = `(${valor}`; // Abre parêntese assim que começa a digitar
-  } else if (valor.length <= 7) {
-    formatado = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-  } else {
-    formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-  }
-
-  // Define o valor formatado
-  campo.value = formatado;
-
-  // Ajusta a posição do cursor para não pular
-  setTimeout(() => {
-    // Calcula nova posição do cursor
-    let novaPos = pos;
-
-    // Se estiver digitando dentro do DDD
-    if (pos <= 3 && valor.length <= 2) {
-      novaPos = pos;
-    } else if (valor.length > 2 && pos <= 5) {
-      // Dentro do espaço após o DDD
-      novaPos = pos;
-    } else {
-      // Ajusta com base na diferença de tamanho
-      novaPos = pos + (formatado.length - valor.length);
+    // Limita a 11 dígitos
+    if (valor.length > 11) {
+        valor = valor.slice(0, 11);
     }
 
-    // Garante que não ultrapasse o final
-    novaPos = Math.min(novaPos, formatado.length);
+    let formatado = "";
 
-    campo.selectionStart = novaPos;
-    campo.selectionEnd = novaPos;
-  }, 0);
+    // Formata conforme o usuário digita
+    if (valor.length === 0) {
+        formatado = "";
+    } else if (valor.length === 1) {
+        formatado = `(${valor}`;
+    } else if (valor.length === 2) {
+        formatado = `(${valor})`;
+    } else if (valor.length <= 7) {
+        formatado = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
+    } else {
+        formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
+    }
+
+    // Salva a diferença de tamanho entre valor bruto e formatado
+    const diff = formatado.length - valor.length;
+
+    // Define o valor formatado
+    campo.value = formatado;
+
+    // Ajusta a posição do cursor — CORREÇÃO PRINCIPAL
+    setTimeout(() => {
+        let novaPos;
+
+        // Se estiver digitando no início (DDD)
+        if (pos <= 1) {
+            novaPos = pos + 1; // Após o "("
+        } else if (pos === 2) {
+            novaPos = pos + 2; // Após o ")" — ex: "(94)"
+        } else if (pos <= 7) {
+            novaPos = pos + 3; // Após o espaço — ex: "(94) 9"
+        } else {
+            novaPos = pos + diff; // Para os demais casos
+        }
+
+        // Garante que não ultrapasse o final
+        novaPos = Math.min(novaPos, formatado.length);
+
+        campo.selectionStart = novaPos;
+        campo.selectionEnd = novaPos;
+    }, 0);
 });
