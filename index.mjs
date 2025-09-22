@@ -51,10 +51,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
     `📲 Entraremos em contato se houver alteração.`;
 
   // Abre o WhatsApp com a mensagem formatada
-  window.open(
-    `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`,
-    "_blank"
-  );
+  window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
 
   // Feedback para o usuário
   alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
