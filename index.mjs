@@ -35,22 +35,22 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   // 🔥 Substitua pelo seu número (sem +, sem espaços, formato internacional)
   const numeroWhatsApp = "5584987443832"; // 👈 ALTERE AQUI!
 
-  // 🎨 Mensagem estilizada com emojis e formatação
+  // 🎨 Mensagem estilizada com emojis e formatação — USE \n em vez de %0A
   const mensagem =
-    `📋 *NOVO PEDIDO DE REFEIÇÃO!*%0A` +
-    `%0A` +
-    `👤 *Nome:* ${nomePessoa}%0A` +
-    `🔢 *Matrícula:* ${matricula}%0A` +
-    `📱 *Contato:* ${formatarTelefone(contato)}%0A` +
-    `🏢 *Empresa:* ${nomeEmpresa}%0A` +
-    `🕒 *Turno:* ${turno}%0A` +
-    `🏪 *Restaurante:* ${restaurante}%0A` +
-    `🍲 *Prato Escolhido:* ${prato}%0A` +
-    `%0A` +
-    `✅ Pedido registrado com sucesso!%0A` +
+    `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
+    `\n` +
+    `👤 *Nome:* ${nomePessoa}\n` +
+    `🔢 *Matrícula:* ${matricula}\n` +
+    `📱 *Contato:* ${formatarTelefone(contato)}\n` +
+    `🏢 *Empresa:* ${nomeEmpresa}\n` +
+    `🕒 *Turno:* ${turno}\n` +
+    `🏪 *Restaurante:* ${restaurante}\n` +
+    `🍲 *Prato Escolhido:* ${prato}\n` +
+    `\n` +
+    `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // Abre o WhatsApp com a mensagem formatada
+  // Abre o WhatsApp com a mensagem formatada — SEM ESPAÇOS!
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
 
   // Feedback para o usuário
