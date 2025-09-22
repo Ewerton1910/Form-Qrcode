@@ -3,23 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="author" content="Seu Nome" />
-    <title>Formulário para WhatsApp</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <title>Formulário de Refeição</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="container">
-      <h1>Envie seu registro</h1>
-      <p>Preencha os dados abaixo para enviar via WhatsApp.</p>
+      <h1>🍽️ Escolha sua refeição</h1>
+      <p>Preencha os dados abaixo para solicitar sua refeição via WhatsApp.</p>
 
       <form id="empresaForm">
         <div class="form-group">
-          <label for="nomePessoa">Nome da Pessoa</label>
+          <label for="nomePessoa">Nome Completo</label>
           <input
             type="text"
             id="nomePessoa"
             name="nomePessoa"
             placeholder="Ex: João Silva"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="matricula">Matrícula</label>
+          <input
+            type="text"
+            id="matricula"
+            name="matricula"
+            placeholder="Ex: 123456"
             required
           />
         </div>
@@ -45,7 +55,71 @@
           </select>
         </div>
 
-        <button type="submit">📤 Enviar para WhatsApp</button>
+        <div class="form-group">
+          <label for="contato">Seu WhatsApp (com DDD)</label>
+          <input
+            type="tel"
+            id="contato"
+            name="contato"
+            placeholder="Ex: (94) 987654321"
+            required
+            maxlength="15"
+          />
+          <small
+            class="error-message"
+            id="erroContato"
+            style="color: #e74c3c; font-size: 0.85rem; display: none"
+          >
+            ❌ Por favor, insira um número válido com 9 dígitos (ex:
+            (94)987654321)
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="prato">Prato Desejado</label>
+          <select id="prato" name="prato" required>
+            <option value="" disabled selected>Escolha seu prato</option>
+            <option value="Macarronada">Macarronada</option>
+            <option value="Lasanha">Lasanha</option>
+            <option value="Feijoada">Feijoada</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="group-label">Restaurante (Retirada)</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input
+                type="radio"
+                name="restaurante"
+                value="Restaurante 1"
+                required
+              />
+              <span class="radio-custom"></span>
+              <span class="radio-text">Restaurante 1</span>
+            </label>
+
+            <label class="radio-label">
+              <input
+                type="radio"
+                name="restaurante"
+                value="Restaurante 2"
+                required
+              />
+              <span class="radio-custom"></span>
+              <span class="radio-text">Restaurante 2</span>
+            </label>
+          </div>
+          <small
+            class="error-message"
+            id="erroRestaurante"
+            style="color: #e74c3c; font-size: 0.85rem; display: none"
+          >
+            ❌ Por favor, selecione um restaurante.
+          </small>
+        </div>
+
+        <button type="submit">📤 Enviar Pedido para WhatsApp</button>
       </form>
 
       <div class="footer" style="margin-top: 20px">
@@ -55,6 +129,6 @@
       </div>
     </div>
 
-    <script src="./index.mjs"></script>
+    <script src="index.mjs"></script>
   </body>
 </html>
