@@ -33,7 +33,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   const restaurante = restauranteInput.value;
 
   // 🔥 Substitua pelo seu número (sem +, sem espaços, formato internacional)
-  const numeroWhatsApp = "5594991432471"; // 👈 ALTERE AQUI!
+  const numeroWhatsApp = "5584987443832"; // 👈 ALTERE AQUI!
 
   // 🎨 Mensagem estilizada com emojis e formatação — USE \n em vez de %0A
   const mensagem =
