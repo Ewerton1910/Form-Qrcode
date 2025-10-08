@@ -1,4 +1,4 @@
-// api/enviar-pedido.js — Versão simplificada (sem dependências)
+// api/enviar-pedido.js — Versão correta para enviar e-mails
 export async function POST(request) {
   try {
     const {
@@ -12,23 +12,7 @@ export async function POST(request) {
       diaRetirada
     } = await request.json();
 
-    // Construa o corpo do e-mail
-    const emailBody = `
-      📋 Novo Pedido de Refeição!
-      
-      👤 Nome: ${nomePessoa}
-      🔢 Matrícula: ${matricula}
-      🏢 Empresa: ${nomeEmpresa}
-      🕒 Turno: ${turno}
-      📆 Dia da Retirada: ${diaRetirada}
-      📱 Contato: ${contato}
-      🏪 Restaurante: ${restaurante}
-      🍲 Prato: ${prato}
-      
-      Pedido enviado via formulário web.
-    `;
-
-    // Envia o e-mail via fetch para o Resend (sem biblioteca)
+    // Envia o e-mail usando fetch direto (sem biblioteca)
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -36,25 +20,39 @@ export async function POST(request) {
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'Pedidos <pedidos@sualanchonete.com>',
-        to: 'seuemail@empresa.com',
+        from: 'onboarding@resend.dev', // Domínio de teste
+        to: 'seuemail@empresa.com',   // Substitua pelo seu e-mail real
         subject: `🍽️ Novo pedido - ${nomePessoa}`,
-        text: emailBody
+        text: `
+          📋 Novo Pedido de Refeição!
+          
+          👤 Nome: ${nomePessoa}
+          🔢 Matrícula: ${matricula}
+          🏢 Empresa: ${nomeEmpresa}
+          🕒 Turno: ${turno}
+          📆 Dia da Retirada: ${diaRetirada}
+          📱 Contato: ${contato}
+          🏪 Restaurante: ${restaurante}
+          🍲 Prato: ${prato}
+          
+          Pedido enviado via formulário web.
+        `
       })
     });
 
     if (!res.ok) {
-      throw new Error(`Resend error: ${await res.text()}`);
+      throw new Error(`Erro ao enviar e-mail: ${await res.text()}`);
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({ success: true, message: 'E-mail enviado!' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
