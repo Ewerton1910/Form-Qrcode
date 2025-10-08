@@ -18,7 +18,7 @@ export async function POST(request) {
     } = await request.json();
 
     const { data, error } = await resend.emails.send({
-      from: "Pedidos <https://form-qrcode.vercel.app/>", // ⚠️ Pode usar onboarding@resend.dev para teste
+      from: 'onboarding@resend.dev', // ⚠️ Pode usar onboarding@resend.dev para teste
       to: "ewertonjhonatas@hotmail.com", // 👈 SEU E-MAIL REAL AQUI!
       subject: `🍽️ Novo pedido de refeição - ${nomePessoa}`,
       html: `
