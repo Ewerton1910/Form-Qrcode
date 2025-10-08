@@ -1,9 +1,4 @@
-// api/enviar-pedido.js
-import { NextResponse } from "next/server";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+// api/enviar-pedido.js — Versão simplificada (sem dependências)
 export async function POST(request) {
   try {
     const {
@@ -14,36 +9,52 @@ export async function POST(request) {
       contato,
       prato,
       restaurante,
-      diaRetirada,
+      diaRetirada
     } = await request.json();
 
-    const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev', // ⚠️ Pode usar onboarding@resend.dev para teste
-      to: "ewertonjhonatas@hotmail.com", // 👈 SEU E-MAIL REAL AQUI!
-      subject: `🍽️ Novo pedido de refeição - ${nomePessoa}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; border: 1px solid #eee; border-radius: 10px; padding: 20px; background: #f9f9f9;">
-          <h2 style="color: #25D366;">📋 Novo Pedido de Refeição!</h2>
-          <p><strong>👤 Nome:</strong> ${nomePessoa}</p>
-          <p><strong>🔢 Matrícula:</strong> ${matricula}</p>
-          <p><strong>🏢 Empresa:</strong> ${nomeEmpresa}</p>
-          <p><strong>🕒 Turno:</strong> ${turno}</p>
-          <p><strong>📆 Dia da Retirada:</strong> ${diaRetirada}</p>
-          <p><strong>📱 Contato:</strong> ${contato}</p>
-          <p><strong>🏪 Restaurante:</strong> ${restaurante}</p>
-          <p><strong>🍲 Prato:</strong> ${prato}</p>
-          <hr style="margin: 20px 0;">
-          <p style="color: #666; font-size: 0.9em;">Pedido enviado via formulário web</p>
-        </div>
-      `,
+    // Construa o corpo do e-mail
+    const emailBody = `
+      📋 Novo Pedido de Refeição!
+      
+      👤 Nome: ${nomePessoa}
+      🔢 Matrícula: ${matricula}
+      🏢 Empresa: ${nomeEmpresa}
+      🕒 Turno: ${turno}
+      📆 Dia da Retirada: ${diaRetirada}
+      📱 Contato: ${contato}
+      🏪 Restaurante: ${restaurante}
+      🍲 Prato: ${prato}
+      
+      Pedido enviado via formulário web.
+    `;
+
+    // Envia o e-mail via fetch para o Resend (sem biblioteca)
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+      },
+      body: JSON.stringify({
+        from: 'Pedidos <pedidos@sualanchonete.com>',
+        to: 'seuemail@empresa.com',
+        subject: `🍽️ Novo pedido - ${nomePessoa}`,
+        text: emailBody
+      })
     });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!res.ok) {
+      throw new Error(`Resend error: ${await res.text()}`);
     }
 
-    return NextResponse.json({ success: true, message: "E-mail enviado!" });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
