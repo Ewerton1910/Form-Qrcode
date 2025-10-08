@@ -21,7 +21,7 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         from: 'onboarding@resend.dev', // Domínio de teste
-        to: 'seuemail@empresa.com',   // Substitua pelo seu e-mail real
+        to: 'ewertonjhonatas@hotmail.com',   // Substitua pelo seu e-mail real
         subject: `🍽️ Novo pedido - ${nomePessoa}`,
         text: `
           📋 Novo Pedido de Refeição!
