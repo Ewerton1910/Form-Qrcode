@@ -55,6 +55,15 @@
         </div>
 
         <div class="form-group">
+          <label for="diaRetirada">Dia da Retirada</label>
+          <select id="diaRetirada" name="diaRetirada" required>
+            <option value="" disabled selected>Escolha o dia</option>
+            <option value="Terça">Terça-feira</option>
+            <option value="Quinta">Quinta-feira</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label for="contato">Seu WhatsApp (com DDD)</label>
           <input
             type="tel"
@@ -86,23 +95,13 @@
           <label class="group-label">Restaurante (Retirada)</label>
           <div class="radio-group">
             <label class="radio-label">
-              <input
-                type="radio"
-                name="restaurante"
-                value="Central"
-                required
-              />
+              <input type="radio" name="restaurante" value="Central" required />
               <span class="radio-custom"></span>
               <span class="radio-text">Central</span>
             </label>
 
             <label class="radio-label">
-              <input
-                type="radio"
-                name="restaurante"
-                value="Campo"
-                required
-              />
+              <input type="radio" name="restaurante" value="Campo" required />
               <span class="radio-custom"></span>
               <span class="radio-text">Campo</span>
             </label>
@@ -126,6 +125,44 @@
       </div>
     </div>
 
-    <script src="index.mjs"></script>
+    <script>
+      document
+        .getElementById("empresaForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const contato = document
+            .getElementById("contato")
+            .value.replace(/\D/g, "");
+          if (!/^\d{2}9\d{8}$/.test(contato)) {
+            alert("Número inválido!");
+            return;
+          }
+
+          // Dentro do seu script de envio (opcional)
+          const diaRetirada = document.getElementById("diaRetirada").value;
+          if (!diaRetirada) {
+            alert("Selecione o dia da retirada!");
+            return;
+          }
+
+          const formData = new FormData(e.target);
+          const data = Object.fromEntries(formData.entries());
+
+          const res = await fetch("/api/enviar-pedido", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            alert("Pedido enviado com sucesso!");
+            e.target.reset();
+          } else {
+            alert("Erro ao enviar. Tente novamente.");
+          }
+        });
+    </script>
+    <!--<script src="index.mjs"></script> -->
   </body>
 </html>
