@@ -6,6 +6,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
     const matricula = document.getElementById("matricula").value;
     const nomeEmpresa = document.getElementById("nomeEmpresa").value;
     const turno = document.getElementById("turno").value;
+    const diaRetirada = document.getElementById("diaRetirada").value;
     const contato = document.getElementById("contato").value.replace(/\D/g, "");
     const prato = document.getElementById("prato").value;
   
