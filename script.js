@@ -17,7 +17,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
     document.getElementById("contato").focus();
     return;
   } else {
-    document.getElementById("erroContaurante").style.display = "none";
+    document.getElementById("erroContato").style.display = "none";
   }
 
   // Validação do restaurante (radio button)
