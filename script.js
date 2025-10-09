@@ -29,7 +29,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   }
   const restaurante = restauranteInput.value;
 
-  const numeroWhatsApp = "5594991432471"; // ← Confira este número!
+  const numeroWhatsApp = "5584987443832"; // ← Confira este número!
 
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
