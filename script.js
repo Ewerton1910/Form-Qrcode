@@ -44,6 +44,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
       `📱 *Contato:* ${formatarTelefone(contato)}\n` +
       `🏢 *Empresa:* ${nomeEmpresa}\n` +
       `🕒 *Turno:* ${turno}\n` +
+      `📅 *Dia da Retirada:* ${diaRetirada}\n` +
       `🏪 *Restaurante:* ${restaurante}\n` +
       `🍲 *Prato Escolhido:* ${prato}\n` +
       `\n` +
