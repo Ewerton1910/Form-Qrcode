@@ -38,19 +38,19 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   
     // 🎨 Mensagem estilizada com emojis e formatação — USE \n em vez de %0A
     const mensagem =
-      `📋 NOVO PEDIDO DE REFEIÇÃO\n` +
-      `\n` +
-      `👤 Nome: ${nomePessoa}\n` +
-      `🔢 Matrícula: ${matricula}\n` +
-      `📱 Contato: ${formatarTelefone(contato)}\n` +
-      `🏢 Empresa: ${nomeEmpresa}\n` +
-      `🕒 Turno: ${turno}\n` +
-      `📅 Dia da Retirada: ${diaRetirada}\n` +
-      `🏪 Restaurante: ${restaurante}\n` +
-      `🍲 Prato Escolhido: ${prato}\n` +
-      `\n` +
-      `✅ Pedido registrado com sucesso!\n` +
-      `📲 Entraremos em contato se houver alteração.`;
+        `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
+        `\n` +
+        `👤 *Nome:* ${nomePessoa}\n` +
+        `🔢 *Matrícula:* ${matricula}\n` +
+        `📱 *Contato:* ${formatarTelefone(contato)}\n` +
+        `🏢 *Empresa:* ${nomeEmpresa}\n` +
+        `🕒 *Turno:* ${turno}\n` +
+        `📅 *Dia da Retirada:* ${diaRetirada}\n` + // ← Nova linha
+        `🏪 *Restaurante:* ${restaurante}\n` +
+        `🍲 *Prato Escolhido:* ${prato}\n` +
+        `\n` +
+        `✅ Pedido registrado com sucesso!\n` +
+        `📲 Entraremos em contato se houver alteração.`;
   
     // Abre o WhatsApp com a mensagem formatada — SEM ESPAÇOS!
     window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`, '_blank');
