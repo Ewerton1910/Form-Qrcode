@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin - Controle de Pedidos</title>
     <link rel="stylesheet" href="styles.css" />
+    
+    <!-- 🔥 Firebase SDK (remova os espaços extras nas URLs!) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    
     <style>
       .container {
         max-width: 500px;
@@ -55,26 +58,39 @@
       >
     </div>
 
+    <!-- ✅ Script corrigido: usa Firebase, não localStorage -->
     <script>
-      function atualizarStatus() {
-        const ativo = localStorage.getItem("servicoAtivo") !== "false";
-        document.getElementById("status").textContent = ativo
-          ? "🟢 Ativo"
-          : "🔴 Desativado";
-      }
+      // 🔥 Seu firebaseConfig (mesmo do script.js)
+      const firebaseConfig = {
+        apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
+        authDomain: "lanchonete-pedidos.firebaseapp.com",
+        databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+        projectId: "lanchonete-pedidos",
+        storageBucket: "lanchonete-pedidos.firebasestorage.app",
+        messagingSenderId: "558143780233",
+        appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
+      };
 
-      atualizarStatus();
+      // Inicializa Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
 
-      document.getElementById("btnAtivar").addEventListener("click", () => {
-        localStorage.setItem("servicoAtivo", "true");
-        atualizarStatus();
-        alert("Pedidos ativados com sucesso!");
+      // Atualiza status em tempo real
+      db.ref('servico/ativo').on('value', (snapshot) => {
+        const ativo = snapshot.val() !== false;
+        document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
       });
 
-      document.getElementById("btnDesativar").addEventListener("click", () => {
-        localStorage.setItem("servicoAtivo", "false");
-        atualizarStatus();
-        alert("Pedidos desativados com sucesso!");
+      // Ativar
+      document.getElementById('btnAtivar').addEventListener('click', () => {
+        db.ref('servico/ativo').set(true);
+        alert('✅ Pedidos ativados com sucesso!');
+      });
+
+      // Desativar
+      document.getElementById('btnDesativar').addEventListener('click', () => {
+        db.ref('servico/ativo').set(false);
+        alert('❌ Pedidos desativados com sucesso!');
       });
     </script>
   </body>
