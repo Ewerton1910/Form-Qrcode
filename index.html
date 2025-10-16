@@ -1,177 +1,44 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formulário de Refeição</title>
-    <link rel="stylesheet" href="styles.css" />
-     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  </head>
-  <body>
-        <button
-      id="btnLogin"
-      style="
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        background: #25d366;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        z-index: 1000;
-        font-size: 14px;
-        width: auto;
-      "
-    >
-      🔐 Login Admin
-    </button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulário de Refeição</title>
+  <link rel="stylesheet" href="styles.css" />
+  
+  <!-- 🔥 Firebase SDK (adicione no <head>) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <!-- Seu botão de login -->
+  <button id="btnLogin" style="position: fixed; top: 16px; right: 16px; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; z-index: 1000;">🔐 Login Admin</button>
 
-    <div class="container">
-      <h1>🍽️ Escolha sua refeição</h1>
-      <p>Preencha os dados abaixo para solicitar sua refeição via WhatsApp.</p>
+  <!-- Seu formulário -->
+  <div class="container">
+    <h1>🍽️ Escolha sua refeição</h1>
+    <p>Preencha os dados abaixo para solicitar sua refeição via WhatsApp.</p>
 
-      <form id="empresaForm">
-        <div class="form-group">
-          <label for="nomePessoa">Nome Completo</label>
-          <input
-            type="text"
-            id="nomePessoa"
-            name="nomePessoa"
-            placeholder="Ex: João Silva"
-            required
-          />
-        </div>
+    <form id="empresaForm">
+      <!-- seus campos aqui -->
+      <button type="submit" id="btnEnviar">📤 Enviar Pedido para WhatsApp</button>
+    </form>
 
-        <div class="form-group">
-          <label for="matricula">Matrícula</label>
-          <input
-            type="text"
-            id="matricula"
-            name="matricula"
-            placeholder="Ex: 123456"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="nomeEmpresa">Nome da Empresa</label>
-          <input
-            type="text"
-            id="nomeEmpresa"
-            name="nomeEmpresa"
-            placeholder="Ex: Tech Solutions"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="turno">Turno (Refeição)</label>
-          <select id="turno" name="turno" required>
-            <option value="" disabled selected>Escolha o horário</option>
-            <option value="Almoço">Almoço</option>
-            <option value="Janta">Janta</option>
-          </select>
-        </div>
-
-        <!-- NOVO CAMPO: Dia da Retirada -->
-        <div class="form-group">
-          <label for="diaRetirada">Dia da Retirada</label>
-          <select id="diaRetirada" name="diaRetirada" required>
-            <option value="" disabled selected>Escolha o dia</option>
-            <option value="Terça-Feira">Terça-Feira</option>
-            <option value="Quinta-Feira">Quinta-Feira</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="contato">Seu WhatsApp (com DDD)</label>
-          <input
-            type="tel"
-            id="contato"
-            name="contato"
-            placeholder="Ex: (94)987654321"
-            required
-            maxlength="15"
-          />
-          <small
-            class="error-message"
-            id="erroContato"
-            style="color: #e74c3c; font-size: 0.85rem; display: none"
-          >
-            ❌ Por favor, insira um número válido com 9 dígitos (ex:
-            (94)987654321)
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label for="prato">Prato Desejado</label>
-          <select id="prato" name="prato" required>
-            <option value="" disabled selected>Escolha seu prato</option>
-            <option value="Gourmet Macarrão">Gourmet</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="group-label">Restaurante (Retirada)</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="restaurante" value="Central" required />
-              <span class="radio-custom"></span>
-              <span class="radio-text">Central</span>
-            </label>
-
-            <label class="radio-label">
-              <input type="radio" name="restaurante" value="Campo" required />
-              <span class="radio-custom"></span>
-              <span class="radio-text">Campo</span>
-            </label>
-          </div>
-          <small
-            class="error-message"
-            id="erroRestaurante"
-            style="color: #e74c3c; font-size: 0.85rem; display: none"
-          >
-            ❌ Por favor, selecione um restaurante.
-          </small>
-        </div>
-
-        <button type="submit">📤 Enviar Pedido para WhatsApp</button>
-      </form>
-
-      <div class="footer" style="margin-top: 20px">
-        <small
-          >Escaneie o QR Code na parede para acessar este formulário.</small
-        >
-      </div>
+    <div class="footer">
+      <small>Escaneie o QR Code na parede para acessar este formulário.</small>
     </div>
+  </div>
 
-    <!-- Modal de Login -->
-    <div id="modalLogin" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Login de Admin</h2>
-        <input type="text" id="loginUser" placeholder="Usuário" />
-        <input type="password" id="loginPass" placeholder="Senha" />
-        <button id="btnSubmitLogin">Entrar</button>
-        <p id="loginError" style="color: red; display: none">
-          Usuário ou senha inválidos
-        </p>
-      </div>
+  <!-- Modal de serviço suspenso -->
+  <div id="modalSuspenso" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2>⚠️ Serviço Temporariamente Suspenso</h2>
+      <p>O serviço de pedidos está desativado no momento.</p>
+      <button id="btnFecharSuspenso">Fechar</button>
     </div>
+  </div>
 
-    <!-- Modal de Serviço Suspenso -->
-    <div id="modalSuspenso" class="modal">
-      <div class="modal-content">
-        <h2>⚠️ Serviço Temporariamente Suspenso</h2>
-        <p>O serviço de pedidos está desativado no momento.</p>
-        <button id="btnFecharSuspenso">Fechar</button>
-      </div>
-    </div>
-
-    <script src="script.js"></script>
-  </body>
+  <!-- ✅ Mantenha esta linha -->
+  <script src="script.js"></script>
+</body>
 </html>
