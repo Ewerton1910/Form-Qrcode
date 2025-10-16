@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Controle de Pedidos</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .btn {
+        width: 100%;
+        padding: 14px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .btn.ativar {
+        background: #25d366;
+      }
+      .btn.desativar {
+        background: #e74c3c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>⚙️ Painel de Administração</h2>
+      <p>
+        <strong>Status atual:</strong> <span id="status">Carregando...</span>
+      </p>
+
+      <button class="btn ativar" id="btnAtivar">✅ Ativar Pedidos</button>
+      <button class="btn desativar" id="btnDesativar">
+        ❌ Desativar Pedidos
+      </button>
+
+      <a
+        href="index.html"
+        style="
+          display: block;
+          margin-top: 20px;
+          color: #667eea;
+          text-decoration: none;
+        "
+        >← Voltar ao formulário</a
+      >
+    </div>
+
+    <script>
+      function atualizarStatus() {
+        const ativo = localStorage.getItem("servicoAtivo") !== "false";
+        document.getElementById("status").textContent = ativo
+          ? "🟢 Ativo"
+          : "🔴 Desativado";
+      }
+
+      atualizarStatus();
+
+      document.getElementById("btnAtivar").addEventListener("click", () => {
+        localStorage.setItem("servicoAtivo", "true");
+        atualizarStatus();
+        alert("Pedidos ativados com sucesso!");
+      });
+
+      document.getElementById("btnDesativar").addEventListener("click", () => {
+        localStorage.setItem("servicoAtivo", "false");
+        atualizarStatus();
+        alert("Pedidos desativados com sucesso!");
+      });
+    </script>
+  </body>
+</html>
