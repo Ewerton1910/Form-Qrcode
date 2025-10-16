@@ -6,14 +6,13 @@
   <title>Formulário de Refeição</title>
   <link rel="stylesheet" href="styles.css" />
   
-  <!-- 🔥 Firebase SDK -->
+  <!-- 🔥 Firebase SDK (sem espaços extras!) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   
   <style>
- 
-
-    /* Estilo do modal */
+    
+    /* Modal base */
     .modal {
       display: none;
       position: fixed;
@@ -33,6 +32,24 @@
       max-width: 400px;
       text-align: center;
     }
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .modal-content button {
+      width: 100%;
+      padding: 10px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
     #btnFecharSuspenso {
       background: #667eea;
       color: white;
@@ -42,11 +59,17 @@
       cursor: pointer;
       margin-top: 16px;
     }
+    .close {
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <!-- Estilo do botão de login -->
-    <button
+  <!-- Botão de Login Admin -->
+      <button
       id="btnLogin"
       style="
         position: fixed;
@@ -114,7 +137,7 @@
         <label for="prato">Prato Desejado</label>
         <select id="prato" name="prato" required>
           <option value="" disabled selected>Escolha seu prato</option>
-          <option value="Gourmet Macarrão">Gourmet</option>
+          <option value="Gourmet Macarrão">Gourmet Macarrão</option>
         </select>
       </div>
 
@@ -142,6 +165,18 @@
 
     <div class="footer" style="margin-top: 20px">
       <small>Escaneie o QR Code na parede para acessar este formulário.</small>
+    </div>
+  </div>
+
+  <!-- Modal de Login -->
+  <div id="modalLogin" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Login de Admin</h2>
+      <input type="text" id="loginUser" placeholder="Usuário" />
+      <input type="password" id="loginPass" placeholder="Senha" />
+      <button id="btnSubmitLogin">Entrar</button>
+      <p id="loginError" style="color: red; display: none;">Usuário ou senha inválidos</p>
     </div>
   </div>
 
