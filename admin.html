@@ -58,40 +58,6 @@
       >
     </div>
 
-    <!-- ✅ Script corrigido: usa Firebase, não localStorage -->
-    <script>
-      // 🔥 Seu firebaseConfig (mesmo do script.js)
-      const firebaseConfig = {
-        apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
-        authDomain: "lanchonete-pedidos.firebaseapp.com",
-        databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
-        projectId: "lanchonete-pedidos",
-        storageBucket: "lanchonete-pedidos.firebasestorage.app",
-        messagingSenderId: "558143780233",
-        appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
-      };
-
-      // Inicializa Firebase
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-
-      // Atualiza status em tempo real
-      db.ref('servico/ativo').on('value', (snapshot) => {
-        const ativo = snapshot.val() !== false;
-        document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
-      });
-
-      // Ativar
-      document.getElementById('btnAtivar').addEventListener('click', () => {
-        db.ref('servico/ativo').set(true);
-        alert('✅ Pedidos ativados com sucesso!');
-      });
-
-      // Desativar
-      document.getElementById('btnDesativar').addEventListener('click', () => {
-        db.ref('servico/ativo').set(false);
-        alert('❌ Pedidos desativados com sucesso!');
-      });
-    </script>
+    <script src="admin.js"></script>
   </body>
 </html>
