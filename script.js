@@ -1,4 +1,4 @@
-// 🔥 Firebase Config (já com seus dados)
+// 🔥 Firebase Config (sem espaços extras!)
 const firebaseConfig = {
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
@@ -8,6 +8,10 @@ const firebaseConfig = {
   messagingSenderId: "558143780233",
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 };
+
+// Credenciais de login
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "senha123";
 
 // Carrega o Firebase via CDN (modo compatível)
 (function() {
@@ -35,12 +39,31 @@ const firebaseConfig = {
         }
       });
 
-      // Redireciona para admin
+      // Mostra modal de login
       document.getElementById('btnLogin')?.addEventListener('click', () => {
-        window.location.href = 'admin.html';
+        document.getElementById('modalLogin').style.display = 'block';
       });
 
       // Fecha modal
+      document.querySelector('.close')?.addEventListener('click', () => {
+        document.getElementById('modalLogin').style.display = 'none';
+      });
+
+      // Login
+      document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
+        const user = document.getElementById('loginUser')?.value;
+        const pass = document.getElementById('loginPass')?.value;
+        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+          window.location.href = 'admin.html';
+        } else {
+          document.getElementById('loginError').style.display = 'block';
+          setTimeout(() => {
+            document.getElementById('loginError').style.display = 'none';
+          }, 3000);
+        }
+      });
+
+      // Fecha modal de suspenso
       document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
         document.getElementById('modalSuspenso').style.display = 'none';
       });
@@ -53,7 +76,6 @@ const firebaseConfig = {
           return;
         }
 
-        // 👇 Seu código de WhatsApp (mantido)
         e.preventDefault();
         const nomePessoa = document.getElementById("nomePessoa").value;
         const matricula = document.getElementById("matricula").value;
@@ -96,6 +118,7 @@ const firebaseConfig = {
           `✅ Pedido registrado com sucesso!\n` +
           `📲 Entraremos em contato se houver alteração.`;
 
+        // ✅ Corrigido: removido espaço extra
         window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
         alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
       });
