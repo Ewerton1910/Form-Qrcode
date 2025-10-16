@@ -82,7 +82,7 @@ document.getElementById("empresaForm").addEventListener("submit", function (e) {
   const restaurante = restauranteInput.value;
 
   // Número do WhatsApp
-  const numeroWhatsApp = "5594991432471";
+  const numeroWhatsApp = "5584987443832";
 
   // Mensagem formatada
   const mensagem =
