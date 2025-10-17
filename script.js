@@ -28,7 +28,7 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
 
 // Login
 document.getElementById('btnLogin')?.addEventListener('click', () => {
-  document.getElementById('modalLogin').style.display = 'block';
+  document.getElementById('modalLogin').style.display = 'flex';
 });
 document.querySelector('.close')?.addEventListener('click', () => {
   document.getElementById('modalLogin').style.display = 'none';
