@@ -116,3 +116,8 @@ document.getElementById("contato")?.addEventListener("input", function (e) {
   else formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
   e.target.value = formatado;
 });
+
+// Teste de sincronização
+setInterval(() => {
+  console.log("Status atual:", servicoAtivo);
+}, 2000);
