@@ -43,9 +43,17 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   }
 });
 
-// Modal suspenso
-document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
-  document.getElementById('modalSuspenso').style.display = 'none';
+// Força a exibição do modal (teste)
+document.getElementById('btnEnviar').addEventListener('click', () => {
+  if (!servicoAtivo) {
+    const modal = document.getElementById('modalSuspenso');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.style.opacity = '1';
+      modal.style.pointerEvents = 'auto';
+      console.log("Modal forçado a aparecer!");
+    }
+  }
 });
 
 // Envio
