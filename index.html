@@ -6,13 +6,24 @@
   <title>Formulário de Refeição</title>
   <link rel="stylesheet" href="styles.css" />
   
-  <!-- 🔥 Firebase SDK (sem espaços extras!) -->
+  <!-- 🔥 Firebase SDK (carregado diretamente) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
+      authDomain: "lanchonete-pedidos.firebaseapp.com",
+      databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+      projectId: "lanchonete-pedidos",
+      storageBucket: "lanchonete-pedidos.firebasestorage.app",
+      messagingSenderId: "558143780233",
+      appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
   
   <style>
-    
-    /* Modal base */
+
     .modal {
       display: none;
       position: fixed;
@@ -24,7 +35,7 @@
       background-color: rgba(0,0,0,0.5);
     }
     .modal-content {
-      background-color: white;
+      background: white;
       margin: 10% auto;
       padding: 24px;
       border-radius: 12px;
@@ -38,7 +49,6 @@
       margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 4px;
-      box-sizing: border-box;
     }
     .modal-content button {
       width: 100%;
@@ -50,6 +60,11 @@
       cursor: pointer;
       margin-top: 10px;
     }
+    .close {
+      float: right;
+      font-size: 28px;
+      cursor: pointer;
+    }
     #btnFecharSuspenso {
       background: #667eea;
       color: white;
@@ -59,16 +74,9 @@
       cursor: pointer;
       margin-top: 16px;
     }
-    .close {
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <!-- Botão de Login Admin -->
       <button
       id="btnLogin"
       style="
@@ -120,16 +128,9 @@
 
       <div class="form-group">
         <label for="contato">Seu WhatsApp (com DDD)</label>
-        <input
-          type="tel"
-          id="contato"
-          name="contato"
-          placeholder="Ex: (94)987654321"
-          required
-          maxlength="15"
-        />
+        <input type="tel" id="contato" name="contato" placeholder="Ex: (94)987654321" required maxlength="15" />
         <small class="error-message" id="erroContato" style="color: #e74c3c; font-size: 0.85rem; display: none">
-          ❌ Por favor, insira um número válido com 9 dígitos (ex: (94)987654321)
+          ❌ Por favor, insira um número válido com 9 dígitos
         </small>
       </div>
 
@@ -168,7 +169,7 @@
     </div>
   </div>
 
-  <!-- Modal de Login -->
+  <!-- Modal Login -->
   <div id="modalLogin" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -180,7 +181,7 @@
     </div>
   </div>
 
-  <!-- Modal de Serviço Suspenso -->
+  <!-- Modal Suspenso -->
   <div id="modalSuspenso" class="modal">
     <div class="modal-content">
       <h2>⚠️ Serviço Temporariamente Suspenso</h2>
@@ -189,7 +190,6 @@
     </div>
   </div>
 
-  <!-- Script principal -->
   <script src="script.js"></script>
 </body>
 </html>
