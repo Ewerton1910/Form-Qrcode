@@ -1,3 +1,4 @@
+console.log("Modal encontrado:", document.getElementById('modalSuspenso'));
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "senha123";
 let servicoAtivo = true;
