@@ -32,12 +32,13 @@ document.getElementById('btnSubmitLogin').addEventListener('click', () => {
 });
 
 // Modal suspenso
-document.getElementById('btnFecharSuspenso').addEventListener('click', () => {
+document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
 // Envio
 document.getElementById('empresaForm').addEventListener('submit', function(e) {
+  // ✅ Verifica PRIMEIRO se o serviço está desativado
   if (!servicoAtivo) {
     e.preventDefault();
     document.getElementById('modalSuspenso').style.display = 'block';
@@ -83,6 +84,7 @@ document.getElementById('empresaForm').addEventListener('submit', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
+  // ✅ Corrigido: removido espaço extra
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
   alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
 });
