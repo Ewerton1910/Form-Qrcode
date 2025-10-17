@@ -1,6 +1,5 @@
 # .vercelignore
 api/
-index.html
 admin.js
 
 
