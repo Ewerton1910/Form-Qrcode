@@ -1,9 +1,18 @@
-console.log("Modal ativado!");
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "senha123";
 let servicoAtivo = true;
 
 // Sincroniza com Firebase
+firebase.initializeApp({
+  apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
+  authDomain: "lanchonete-pedidos.firebaseapp.com",
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+  projectId: "lanchonete-pedidos",
+  storageBucket: "lanchonete-pedidos.firebasestorage.app",
+  messagingSenderId: "558143780233",
+  appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
+});
+
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
@@ -15,20 +24,22 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
 });
 
 // Login
-document.getElementById('btnLogin').addEventListener('click', () => {
+document.getElementById('btnLogin')?.addEventListener('click', () => {
   document.getElementById('modalLogin').style.display = 'block';
 });
-document.querySelector('.close').addEventListener('click', () => {
+document.querySelector('.close')?.addEventListener('click', () => {
   document.getElementById('modalLogin').style.display = 'none';
 });
-document.getElementById('btnSubmitLogin').addEventListener('click', () => {
-  const user = document.getElementById('loginUser').value;
-  const pass = document.getElementById('loginPass').value;
+document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
+  const user = document.getElementById('loginUser')?.value;
+  const pass = document.getElementById('loginPass')?.value;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
     window.location.href = 'admin.html';
   } else {
     document.getElementById('loginError').style.display = 'block';
-    setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
+    setTimeout(() => {
+      document.getElementById('loginError').style.display = 'none';
+    }, 3000);
   }
 });
 
@@ -38,18 +49,14 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
 });
 
 // Envio
-document.getElementById('empresaForm').addEventListener('submit', function(e) {
-  // ✅ Verifica PRIMEIRO se o serviço está desativado
+document.getElementById('empresaForm')?.addEventListener('submit', function(e) {
   if (!servicoAtivo) {
-  e.preventDefault();
-  const modal = document.getElementById('modalSuspenso');
-  if (modal) {
-    modal.style.display = 'flex'; // ou 'block'
-    modal.style.opacity = '1';
-    modal.style.pointerEvents = 'auto';
+    e.preventDefault();
+    console.log("Modal ativado!");
+    document.getElementById('modalSuspenso').style.display = 'block';
+    return;
   }
-  return;
-}
+
   e.preventDefault();
   const nomePessoa = document.getElementById("nomePessoa").value;
   const matricula = document.getElementById("matricula").value;
@@ -89,7 +96,6 @@ document.getElementById('empresaForm').addEventListener('submit', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // ✅ Corrigido: removido espaço extra
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
   alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
 });
@@ -99,7 +105,7 @@ function formatarTelefone(numero) {
   if (numero.length !== 11) return numero;
   return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
 }
-document.getElementById("contato").addEventListener("input", function (e) {
+document.getElementById("contato")?.addEventListener("input", function (e) {
   let valor = e.target.value.replace(/\D/g, "");
   if (valor.length > 11) valor = valor.slice(0, 11);
   let formatado = "";
