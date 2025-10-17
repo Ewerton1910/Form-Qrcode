@@ -223,6 +223,12 @@ button:active {
   width: 90%;
 }
 
+/* Estilo para botão "suspenso" */
+.btn-suspenso {
+  background-color: #ccc !important;
+  cursor: not-allowed !important;
+}
+
 #btnFecharSuspenso {
   margin-top: 16px;
   padding: 8px 16px;
