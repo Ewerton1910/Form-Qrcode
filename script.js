@@ -2,17 +2,18 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = "senha123";
 let servicoAtivo = true;
 
-// Inicializa Firebase (sem espaços extras!)
+// Inicializa Firebase (sem espaços!)
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ removido espaço
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
   messagingSenderId: "558143780233",
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
+// Sincroniza status do serviço
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
@@ -37,34 +38,32 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
     window.location.href = 'admin.html';
   } else {
     document.getElementById('loginError').style.display = 'block';
-    setTimeout(() => {
-      document.getElementById('loginError').style.display = 'none';
-    }, 3000);
+    setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
   }
 });
 
-// Fecha modal de suspenso
+// ✅ FECHA O MODAL DE SUSPENSO
 document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// ✅ Intercepta o clique no botão ENVIAR (não no submit do formulário)
+// ✅ INTERCEPTA O CLIQUE NO BOTÃO DE ENVIAR — SEM DEPENDER DO SUBMIT
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
-  // Verifica se o serviço está desativado
+  // Impede qualquer comportamento padrão (submit, recarregar, etc.)
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
   if (!servicoAtivo) {
-    e.preventDefault();
-    document.getElementById('modalSuspenso').style.display = 'flex';
+    // Mostra o modal de serviço suspenso
+    const modal = document.getElementById('modalSuspenso');
+    if (modal) {
+      modal.style.display = 'flex'; // ou 'block'
+      console.log("Modal exibido com sucesso!");
+    }
     return;
   }
 
-  // Se estiver ativo, deixa o formulário ser enviado normalmente
-  // (o submit será tratado abaixo)
-});
-
-// Trata o envio do formulário (só se estiver ativo)
-document.getElementById('empresaForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-
+  // Se estiver ativo, processa o envio manualmente
   const nomePessoa = document.getElementById("nomePessoa").value;
   const matricula = document.getElementById("matricula").value;
   const nomeEmpresa = document.getElementById("nomeEmpresa").value;
@@ -72,22 +71,20 @@ document.getElementById('empresaForm').addEventListener('submit', function(e) {
   const contato = document.getElementById("contato").value.replace(/\D/g, "");
   const prato = document.getElementById("prato").value;
 
+  // Validação
   if (!/^\d{2}9\d{8}$/.test(contato)) {
-    document.getElementById("erroContato").style.display = "block";
+    alert("Número de WhatsApp inválido!");
     return;
-  } else {
-    document.getElementById("erroContato").style.display = "none";
   }
 
   const restauranteInput = document.querySelector('input[name="restaurante"]:checked');
   if (!restauranteInput) {
-    document.getElementById("erroRestaurante").style.display = "block";
+    alert("Selecione um restaurante!");
     return;
-  } else {
-    document.getElementById("erroRestaurante").style.display = "none";
   }
   const restaurante = restauranteInput.value;
 
+  // Envia para WhatsApp
   const numeroWhatsApp = "5584987443832";
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
@@ -103,12 +100,10 @@ document.getElementById('empresaForm').addEventListener('submit', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // ✅ Corrigido: removido espaço extra
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
-  alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
 });
 
-// Formatação telefone
+// Formatação de telefone
 function formatarTelefone(numero) {
   if (numero.length !== 11) return numero;
   return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
