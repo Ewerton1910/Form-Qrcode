@@ -1,115 +1,202 @@
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "senha123";
-let servicoAtivo = true;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulário de Refeição</title>
+  <link rel="stylesheet" href="styles.css" />
+  
+  <!-- 🔥 Firebase SDK (sem espaços!) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
+      authDomain: "lanchonete-pedidos.firebaseapp.com",
+      databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+      projectId: "lanchonete-pedidos",
+      storageBucket: "lanchonete-pedidos.firebasestorage.app",
+      messagingSenderId: "558143780233",
+      appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
+  <style>
+    /* Botão de Login Admin */
+    #btnLogin {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
 
-// Inicializa Firebase
-firebase.initializeApp({
-  apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
-  authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
-  projectId: "lanchonete-pedidos",
-  storageBucket: "lanchonete-pedidos.firebasestorage.app",
-  messagingSenderId: "558143780233",
-  appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
-});
+    /* Modal base */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .modal-content button {
+      width: 100%;
+      padding: 10px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #btnFecharSuspenso {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .close {
+      float: right;
+      font-size: 28px;
+      cursor: pointer;
+    }
 
-// Sincroniza status
-firebase.database().ref('servico/ativo').on('value', (snapshot) => {
-  servicoAtivo = snapshot.val() !== false;
-  const btn = document.getElementById('btnEnviar');
-  if (btn) {
-    // ✅ NÃO desabilita o botão — só muda o estilo
-    btn.classList.toggle('btn-suspenso', !servicoAtivo);
-    btn.textContent = servicoAtivo 
-      ? '📤 Enviar Pedido para WhatsApp' 
-      : '❌ Serviço Suspenso';
-  }
-});
+    /* Estilo para botão "suspenso" */
+    .btn-suspenso {
+      background-color: #ccc !important;
+      cursor: not-allowed !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Botão de Login Admin -->
+  <button id="btnLogin">🔐 Login Admin</button>
 
-// Login
-document.getElementById('btnLogin')?.addEventListener('click', () => {
-  document.getElementById('modalLogin').style.display = 'block';
-});
-document.querySelector('.close')?.addEventListener('click', () => {
-  document.getElementById('modalLogin').style.display = 'none';
-});
-document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
-  const user = document.getElementById('loginUser')?.value;
-  const pass = document.getElementById('loginPass')?.value;
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    window.location.href = 'admin.html';
-  } else {
-    document.getElementById('loginError').style.display = 'block';
-    setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
-  }
-});
+  <div class="container">
+    <h1>🍽️ Escolha sua refeição</h1>
+    <p>Preencha os dados abaixo para solicitar sua refeição via WhatsApp.</p>
 
-// Fecha modal suspenso
-document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
-  document.getElementById('modalSuspenso').style.display = 'none';
-});
+    <form id="empresaForm">
+      <div class="form-group">
+        <label for="nomePessoa">Nome Completo</label>
+        <input type="text" id="nomePessoa" name="nomePessoa" placeholder="Ex: João Silva" required />
+      </div>
 
-// ✅ CLIQUE NO BOTÃO — SEMPRE FUNCIONA, MESMO "DESABILITADO"
-document.getElementById('btnEnviar').addEventListener('click', function(e) {
-  e.preventDefault();
+      <div class="form-group">
+        <label for="matricula">Matrícula</label>
+        <input type="text" id="matricula" name="matricula" placeholder="Ex: 123456" required />
+      </div>
 
-  if (!servicoAtivo) {
-    // Mostra modal
-    document.getElementById('modalSuspenso').style.display = 'flex';
-    return;
-  }
+      <div class="form-group">
+        <label for="nomeEmpresa">Nome da Empresa</label>
+        <input type="text" id="nomeEmpresa" name="nomeEmpresa" placeholder="Ex: Tech Solutions" required />
+      </div>
 
-  // Se estiver ativo, envia
-  const nomePessoa = document.getElementById("nomePessoa").value;
-  const matricula = document.getElementById("matricula").value;
-  const nomeEmpresa = document.getElementById("nomeEmpresa").value;
-  const turno = document.getElementById("turno").value;
-  const contato = document.getElementById("contato").value.replace(/\D/g, "");
-  const prato = document.getElementById("prato").value;
+      <div class="form-group">
+        <label for="turno">Turno (Refeição)</label>
+        <select id="turno" name="turno" required>
+          <option value="" disabled selected>Escolha o horário</option>
+          <option value="Almoço">Almoço</option>
+          <option value="Janta">Janta</option>
+        </select>
+      </div>
 
-  if (!/^\d{2}9\d{8}$/.test(contato)) {
-    alert("Número de WhatsApp inválido!");
-    return;
-  }
+      <div class="form-group">
+        <label for="contato">Seu WhatsApp (com DDD)</label>
+        <input type="tel" id="contato" name="contato" placeholder="Ex: (94)987654321" required maxlength="15" />
+        <small class="error-message" id="erroContato" style="color: #e74c3c; font-size: 0.85rem; display: none">
+          ❌ Por favor, insira um número válido com 9 dígitos
+        </small>
+      </div>
 
-  const restauranteInput = document.querySelector('input[name="restaurante"]:checked');
-  if (!restauranteInput) {
-    alert("Selecione um restaurante!");
-    return;
-  }
-  const restaurante = restauranteInput.value;
+      <div class="form-group">
+        <label for="prato">Prato Desejado</label>
+        <select id="prato" name="prato" required>
+          <option value="" disabled selected>Escolha seu prato</option>
+          <option value="Gourmet Macarrão">Gourmet Macarrão</option>
+        </select>
+      </div>
 
-  const numeroWhatsApp = "5584987443832";
-  const mensagem =
-    `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
-    `\n` +
-    `👤 *Nome:* ${nomePessoa}\n` +
-    `🔢 *Matrícula:* ${matricula}\n` +
-    `📱 *Contato:* ${formatarTelefone(contato)}\n` +
-    `🏢 *Empresa:* ${nomeEmpresa}\n` +
-    `🕒 *Turno:* ${turno}\n` +
-    `🏪 *Restaurante:* ${restaurante}\n` +
-    `🍲 *Prato Escolhido:* ${prato}\n` +
-    `\n` +
-    `✅ Pedido registrado com sucesso!\n` +
-    `📲 Entraremos em contato se houver alteração.`;
+      <div class="form-group">
+        <label class="group-label">Restaurante (Retirada)</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="restaurante" value="Central" required />
+            <span class="radio-custom"></span>
+            <span class="radio-text">Central</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="restaurante" value="Campo" required />
+            <span class="radio-custom"></span>
+            <span class="radio-text">Campo</span>
+          </label>
+        </div>
+        <small class="error-message" id="erroRestaurante" style="color: #e74c3c; font-size: 0.85rem; display: none">
+          ❌ Por favor, selecione um restaurante.
+        </small>
+      </div>
 
-  window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
-});
+      <button type="submit" id="btnEnviar">📤 Enviar Pedido para WhatsApp</button>
+    </form>
 
-// Formatação telefone
-function formatarTelefone(numero) {
-  if (numero.length !== 11) return numero;
-  return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
-}
-document.getElementById("contato")?.addEventListener("input", function (e) {
-  let valor = e.target.value.replace(/\D/g, "");
-  if (valor.length > 11) valor = valor.slice(0, 11);
-  let formatado = "";
-  if (valor.length === 0) formatado = "";
-  else if (valor.length === 1) formatado = `(${valor}`;
-  else if (valor.length === 2) formatado = `(${valor})`;
-  else if (valor.length <= 7) formatado = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-  else formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-  e.target.value = formatado;
-});
+    <div class="footer" style="margin-top: 20px">
+      <small>Escaneie o QR Code na parede para acessar este formulário.</small>
+    </div>
+  </div>
+
+  <!-- Modal Login -->
+  <div id="modalLogin" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Login de Admin</h2>
+      <input type="text" id="loginUser" placeholder="Usuário" />
+      <input type="password" id="loginPass" placeholder="Senha" />
+      <button id="btnSubmitLogin">Entrar</button>
+      <p id="loginError" style="color: red; display: none;">Usuário ou senha inválidos</p>
+    </div>
+  </div>
+
+  <!-- Modal de Serviço Suspenso -->
+  <div id="modalSuspenso" class="modal">
+    <div class="modal-content">
+      <h2>⚠️ Serviço Temporariamente Suspenso</h2>
+      <p>No momento, não estamos recebendo pedidos. Tente novamente mais tarde.</p>
+      <button id="btnFecharSuspenso">Fechar</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
