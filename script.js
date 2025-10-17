@@ -79,7 +79,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   }
   const restaurante = restauranteInput.value;
 
-  const numeroWhatsApp = "5584987443832";
+  const numeroWhatsApp = "5594991432471";
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
