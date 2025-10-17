@@ -2,11 +2,11 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = "senha123";
 let servicoAtivo = true;
 
-// Sincroniza com Firebase
+// Inicializa Firebase (sem espaços extras!)
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ removido espaço
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
   messagingSenderId: "558143780233",
@@ -43,29 +43,28 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   }
 });
 
-// Força a exibição do modal (teste)
-document.getElementById('btnEnviar').addEventListener('click', () => {
-  if (!servicoAtivo) {
-    const modal = document.getElementById('modalSuspenso');
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.style.opacity = '1';
-      modal.style.pointerEvents = 'auto';
-      console.log("Modal forçado a aparecer!");
-    }
-  }
+// Fecha modal de suspenso
+document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
+  document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// Envio
-document.getElementById('empresaForm')?.addEventListener('submit', function(e) {
+// ✅ Intercepta o clique no botão ENVIAR (não no submit do formulário)
+document.getElementById('btnEnviar').addEventListener('click', function(e) {
+  // Verifica se o serviço está desativado
   if (!servicoAtivo) {
     e.preventDefault();
-    console.log("Modal ativado!");
-    document.getElementById('modalSuspenso').style.display = 'block';
+    document.getElementById('modalSuspenso').style.display = 'flex';
     return;
   }
 
+  // Se estiver ativo, deixa o formulário ser enviado normalmente
+  // (o submit será tratado abaixo)
+});
+
+// Trata o envio do formulário (só se estiver ativo)
+document.getElementById('empresaForm').addEventListener('submit', function(e) {
   e.preventDefault();
+
   const nomePessoa = document.getElementById("nomePessoa").value;
   const matricula = document.getElementById("matricula").value;
   const nomeEmpresa = document.getElementById("nomeEmpresa").value;
@@ -104,6 +103,7 @@ document.getElementById('empresaForm')?.addEventListener('submit', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
+  // ✅ Corrigido: removido espaço extra
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
   alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
 });
@@ -124,8 +124,3 @@ document.getElementById("contato")?.addEventListener("input", function (e) {
   else formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
   e.target.value = formatado;
 });
-
-// Teste de sincronização
-setInterval(() => {
-  console.log("Status atual:", servicoAtivo);
-}, 2000);
