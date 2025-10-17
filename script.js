@@ -1,5 +1,5 @@
 const ADMIN_USER = "admin";
-const ADMIN_PASS = "senha123";
+const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
 // Inicializa Firebase
