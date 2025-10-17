@@ -1,63 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin - Controle de Pedidos</title>
-    <link rel="stylesheet" href="styles.css" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Controle</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+    .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; text-align: center; }
+    .btn { display: block; width: 100%; padding: 14px; margin: 12px 0; border: none; border-radius: 8px; color: white; font-size: 16px; cursor: pointer; }
+    .ativar { background: #25D366; }
+    .desativar { background: #e74c3c; }
+    a { display: block; margin-top: 20px; color: #667eea; text-decoration: none; }
+  </style>
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
+      authDomain: "lanchonete-pedidos.firebaseapp.com",
+      databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+      projectId: "lanchonete-pedidos",
+      storageBucket: "lanchonete-pedidos.firebasestorage.app",
+      messagingSenderId: "558143780233",
+      appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>⚙️ Painel de Administração</h2>
+    <p><strong>Status atual:</strong> <span id="status">Carregando...</span></p>
     
-    <!-- 🔥 Firebase SDK (remova os espaços extras nas URLs!) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <button class="btn ativar" id="btnAtivar">✅ Ativar Pedidos</button>
+    <button class="btn desativar" id="btnDesativar">❌ Desativar Pedidos</button>
     
-    <style>
-      .container {
-        max-width: 500px;
-        margin: 40px auto;
-        padding: 24px;
-      }
-      .btn {
-        width: 100%;
-        padding: 14px;
-        margin: 8px 0;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-      }
-      .btn.ativar {
-        background: #25d366;
-      }
-      .btn.desativar {
-        background: #e74c3c;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2>⚙️ Painel de Administração</h2>
-      <p>
-        <strong>Status atual:</strong> <span id="status">Carregando...</span>
-      </p>
+    <a href="index.html">← Voltar ao formulário</a>
+  </div>
 
-      <button class="btn ativar" id="btnAtivar">✅ Ativar Pedidos</button>
-      <button class="btn desativar" id="btnDesativar">
-        ❌ Desativar Pedidos
-      </button>
+  <script>
+    firebase.database().ref('servico/ativo').on('value', (snapshot) => {
+      const ativo = snapshot.val() !== false;
+      document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
+    });
 
-      <a
-        href="index.html"
-        style="
-          display: block;
-          margin-top: 20px;
-          color: #667eea;
-          text-decoration: none;
-        "
-        >← Voltar ao formulário</a
-      >
-    </div>
+    document.getElementById('btnAtivar').addEventListener('click', () => {
+      firebase.database().ref('servico/ativo').set(true);
+      alert('✅ Pedidos ativados!');
+    });
 
-    <script src="admin.js"></script>
-  </body>
+    document.getElementById('btnDesativar').addEventListener('click', () => {
+      firebase.database().ref('servico/ativo').set(false);
+      alert('❌ Pedidos desativados!');
+    });
+  </script>
+</body>
 </html>
