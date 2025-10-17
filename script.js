@@ -41,11 +41,15 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
 document.getElementById('empresaForm').addEventListener('submit', function(e) {
   // ✅ Verifica PRIMEIRO se o serviço está desativado
   if (!servicoAtivo) {
-    e.preventDefault();
-    document.getElementById('modalSuspenso').style.display = 'block';
-    return;
+  e.preventDefault();
+  const modal = document.getElementById('modalSuspenso');
+  if (modal) {
+    modal.style.display = 'flex'; // ou 'block'
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
   }
-
+  return;
+}
   e.preventDefault();
   const nomePessoa = document.getElementById("nomePessoa").value;
   const matricula = document.getElementById("matricula").value;
