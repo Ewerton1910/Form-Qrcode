@@ -211,9 +211,11 @@ button:active {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.6);
+  display: flex; /* ✅ ESSENCIAL */
   justify-content: center;
   align-items: center;
 }
+
 .modal-content {
   background: white;
   padding: 24px;
@@ -223,27 +225,7 @@ button:active {
   width: 90%;
 }
 
-/* Centraliza o modal de login */
-#modalLogin {
-  display: none;
-  position: fixed;
-  z-index: 2000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-}
-#modalLogin .modal-content {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
+
 
 /* Estilo para botão "suspenso" */
 .btn-suspenso {
