@@ -64,6 +64,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   const matricula = document.getElementById("matricula").value;
   const nomeEmpresa = document.getElementById("nomeEmpresa").value;
   const turno = document.getElementById("turno").value;
+  const diaRetirada = document.getElementById("diaRetirada").value;
   const contato = document.getElementById("contato").value.replace(/\D/g, "");
   const prato = document.getElementById("prato").value;
 
@@ -88,6 +89,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     `📱 *Contato:* ${formatarTelefone(contato)}\n` +
     `🏢 *Empresa:* ${nomeEmpresa}\n` +
     `🕒 *Turno:* ${turno}\n` +
+    `📅 *Dia da Retirada:* ${diaRetirada}\n` +
     `🏪 *Restaurante:* ${restaurante}\n` +
     `🍲 *Prato Escolhido:* ${prato}\n` +
     `\n` +
@@ -113,3 +115,13 @@ document.getElementById("contato")?.addEventListener("input", function (e) {
   else formatado = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
   e.target.value = formatado;
 });
+
+// Validação do dia da retirada
+const diaInput = document.querySelector('select[name="diaRetirada"]');
+if (!diaInput.value) {
+  document.getElementById("erroDia").style.display = "block";
+  diaInput.focus();
+  return;
+} else {
+  document.getElementById("erroDia").style.display = "none";
+}
