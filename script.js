@@ -116,12 +116,4 @@ document.getElementById("contato")?.addEventListener("input", function (e) {
   e.target.value = formatado;
 });
 
-// Validação do dia da retirada
-const diaInput = document.querySelector('select[name="diaRetirada"]');
-if (!diaInput.value) {
-  document.getElementById("erroDia").style.display = "block";
-  diaInput.focus();
-  return;
-} else {
-  document.getElementById("erroDia").style.display = "none";
-}
+
