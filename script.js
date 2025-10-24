@@ -2,7 +2,7 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
-// Inicializa Firebase (sem espaços extras!)
+// Inicializa Firebase
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
@@ -56,10 +56,10 @@ function formatarDataExibicao(data) {
   return `${nomeDia}, ${dia}/${mes}/${ano}`;
 }
 
-// Horários por restaurante (só para Almoço)
+// Horários por restaurante
 const HORARIOS_ALMOCO = {
-  Central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
-  Campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
+  central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
+  campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
 };
 
 // Atualiza campos com base no turno e restaurante
@@ -68,16 +68,36 @@ function atualizarCamposPorTurnoERestaurante() {
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
 
-  if (turno === "Almoço" && restauranteSelecionado && HORARIOS_ALMOCO[restauranteSelecionado]) {
+  if (turno === "Almoço" && restauranteSelecionado) {
     const select = document.getElementById('horarioRetirada');
-    select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
-    HORARIOS_ALMOCO[restauranteSelecionado].forEach(horario => {
-      const option = document.createElement('option');
-      option.value = horario;
-      option.textContent = horario;
-      select.appendChild(option);
+    select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+    
+    // Carrega horários do Firebase
+    const restauranteKey = restauranteSelecionado.toLowerCase();
+    let horariosCarregados = 0;
+    let totalHorarios = HORARIOS_ALMOCO[restauranteKey].length;
+
+    HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
+      firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
+        const data = snapshot.val() || { ativo: true, contador: 0 };
+        if (data.ativo) {
+          const option = document.createElement('option');
+          option.value = horario;
+          option.textContent = horario;
+          select.appendChild(option);
+        }
+        horariosCarregados++;
+        if (horariosCarregados === totalHorarios) {
+          if (select.options.length <= 1) {
+            select.innerHTML = '<option value="" disabled selected>Nenhum horário disponível</option>';
+          } else {
+            const firstOption = select.removeChild(select.firstChild);
+            select.insertBefore(firstOption, select.firstChild);
+          }
+          containerHorario.style.display = 'block';
+        }
+      });
     });
-    containerHorario.style.display = 'block';
   } else {
     containerHorario.style.display = 'none';
   }
@@ -112,7 +132,7 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// ✅ CLIQUE NO BOTÃO — COM CONTADORES
+// CLIQUE NO BOTÃO — COM CONTADORES E HORÁRIOS
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -154,9 +174,10 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
 
   // Horário (só se for Almoço)
   let linhaHorario = "";
+  let horarioRetirada = "";
   const horarioContainer = document.getElementById('horarioContainer');
   if (horarioContainer.style.display !== 'none') {
-    const horarioRetirada = document.getElementById("horarioRetirada").value;
+    horarioRetirada = document.getElementById("horarioRetirada").value;
     if (!horarioRetirada) {
       alert("Selecione o horário da retirada!");
       return;
@@ -164,9 +185,18 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
   }
 
-  // ✅ INCREMENTA CONTADOR NO FIREBASE
+  // Incrementa contadores
   const db = firebase.database();
+  
+  // Contador por restaurante
   db.ref('contadores/' + restaurante.toLowerCase()).transaction(current => (current || 0) + 1);
+  
+  // Contador por horário (só no Almoço)
+  if (turno === "Almoço" && horarioRetirada) {
+    const restauranteKey = restaurante.toLowerCase();
+    const horarioRef = db.ref(`horarios/${restauranteKey}/${horarioRetirada}/contador`);
+    horarioRef.transaction(current => (current || 0) + 1);
+  }
 
   // Monta mensagem
   const numeroWhatsApp = "5584987443832";
