@@ -2,11 +2,11 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
-// Inicializa Firebase
+// Inicializa Firebase (sem espaços extras!)
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ removido espaço
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
   messagingSenderId: "558143780233",
@@ -69,7 +69,6 @@ function atualizarCamposPorTurnoERestaurante() {
   const containerHorario = document.getElementById('horarioContainer');
 
   if (turno === "Almoço" && restauranteSelecionado && HORARIOS_ALMOCO[restauranteSelecionado]) {
-    // Atualiza horários
     const select = document.getElementById('horarioRetirada');
     select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
     HORARIOS_ALMOCO[restauranteSelecionado].forEach(horario => {
@@ -84,7 +83,7 @@ function atualizarCamposPorTurnoERestaurante() {
   }
 }
 
-// Eventos para atualizar dinamicamente
+// Eventos dinâmicos
 document.getElementById('turno')?.addEventListener('change', atualizarCamposPorTurnoERestaurante);
 document.querySelectorAll('input[name="restaurante"]').forEach(radio => {
   radio.addEventListener('change', atualizarCamposPorTurnoERestaurante);
@@ -113,7 +112,7 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// ✅ CLIQUE NO BOTÃO — SEMPRE FUNCIONA
+// ✅ CLIQUE NO BOTÃO — COM CONTADORES
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -165,6 +164,10 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
   }
 
+  // ✅ INCREMENTA CONTADOR NO FIREBASE
+  const db = firebase.database();
+  db.ref('contadores/' + restaurante.toLowerCase()).transaction(current => (current || 0) + 1);
+
   // Monta mensagem
   const numeroWhatsApp = "5584987443832";
   const mensagem =
@@ -183,7 +186,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // ✅ Corrigido: removido espaço extra
+  // Envia para WhatsApp
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
 });
 
