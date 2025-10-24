@@ -147,6 +147,25 @@
         </small>
       </div>
 
+      <div class="form-group">
+        <label class="group-label">Restaurante (Retirada)</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="restaurante" value="Central" required />
+            <span class="radio-custom"></span>
+            <span class="radio-text">Central</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="restaurante" value="Campo" required />
+            <span class="radio-custom"></span>
+            <span class="radio-text">Campo</span>
+          </label>
+        </div>
+        <small class="error-message" id="erroRestaurante" style="color: #e74c3c; font-size: 0.85rem; display: none">
+          ❌ Por favor, selecione um restaurante.
+        </small>
+      </div>
+
       <!-- Container do Horário (só aparece no Almoço) -->
       <div id="horarioContainer" class="form-group" style="display:none;">
         <label for="horarioRetirada">Horário da Retirada</label>
@@ -171,24 +190,7 @@
         </select>
       </div>
 
-      <div class="form-group">
-        <label class="group-label">Restaurante (Retirada)</label>
-        <div class="radio-group">
-          <label class="radio-label">
-            <input type="radio" name="restaurante" value="Central" required />
-            <span class="radio-custom"></span>
-            <span class="radio-text">Central</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="restaurante" value="Campo" required />
-            <span class="radio-custom"></span>
-            <span class="radio-text">Campo</span>
-          </label>
-        </div>
-        <small class="error-message" id="erroRestaurante" style="color: #e74c3c; font-size: 0.85rem; display: none">
-          ❌ Por favor, selecione um restaurante.
-        </small>
-      </div>
+      
 
       <button type="submit" id="btnEnviar">📤 Enviar Pedido para WhatsApp</button>
     </form>
