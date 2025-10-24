@@ -9,6 +9,15 @@
     .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; }
     .section { margin-bottom: 25px; }
     h2, h3, h4 { text-align: center; margin-bottom: 15px; }
+    .contador-geral {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      text-align: center;
+    }
     .horario-item {
       display: flex;
       justify-content: space-between;
@@ -26,8 +35,17 @@
       font-size: 14px;
     }
     .btn-desativar { background: #e74c3c; color: white; }
-    .btn-ativar { background: #2ecc71; color: white; }
-    .btn-zerar { background: #9b59b6; color: white; width: 100%; padding: 12px; margin: 15px 0; }
+    .btn-zerar { 
+      background: #9b59b6; 
+      color: white; 
+      width: 100%; 
+      padding: 14px; 
+      margin: 20px 0; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 16px; 
+    }
     .status { font-weight: bold; }
     .status.ativo { color: #27ae60; }
     .status.inativo { color: #e74c3c; }
@@ -57,13 +75,24 @@
     <!-- Status do serviço -->
     <div class="section">
       <p><strong>Status:</strong> <span id="status">Carregando...</span></p>
-      <button class="btn" id="btnAtivar" style="background:#2ecc71;color:white;margin-right:10px;">✅ Ativar Pedidos</button>
-      <button class="btn" id="btnDesativar" style="background:#e74c3c;color:white;">❌ Desativar Pedidos</button>
+      <button class="btn-zerar" id="btnAtivar" style="background:#2ecc71;">✅ Ativar Pedidos</button>
+      <button class="btn-zerar" id="btnDesativar" style="background:#e74c3c;margin-top:10px;">❌ Desativar Pedidos</button>
     </div>
 
-    <!-- Controle de Horários -->
+    <!-- Contadores Gerais -->
     <div class="section">
-      <h3>🕓 Controle de Horários</h3>
+      <h3>📊 Contadores Gerais</h3>
+      <div class="contador-geral">
+        🏪 Central: <span id="contadorCentral">0</span>
+      </div>
+      <div class="contador-geral">
+        🏕️ Campo: <span id="contadorCampo">0</span>
+      </div>
+    </div>
+
+    <!-- Contadores por Horário -->
+    <div class="section">
+      <h3>🕓 Contadores por Horário</h3>
       
       <h4>🏪 Central</h4>
       <div id="horarios-central"></div>
@@ -71,7 +100,7 @@
       <h4>🏕️ Campo</h4>
       <div id="horarios-campo"></div>
       
-      <button class="btn-zerar" id="btnZerarHorarios">🔄 Zerar Contadores de Horários</button>
+      <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
     </div>
 
     <a href="index.html">← Voltar ao formulário</a>
@@ -90,6 +119,14 @@
       document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
     });
 
+    // Sincroniza contadores gerais
+    db.ref('contadores/central').on('value', (snapshot) => {
+      document.getElementById('contadorCentral').textContent = snapshot.val() || 0;
+    });
+    db.ref('contadores/campo').on('value', (snapshot) => {
+      document.getElementById('contadorCampo').textContent = snapshot.val() || 0;
+    });
+
     // Sincroniza horários
     function carregarHorarios(restaurante, containerId) {
       const container = document.getElementById(containerId);
@@ -100,7 +137,6 @@
         item.innerHTML = `
           <span>${horario}</span>
           <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
-          <button class="btn btn-ativar" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">Ativar</button>
           <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">Desativar</button>
         `;
         container.appendChild(item);
@@ -109,16 +145,14 @@
         db.ref(`horarios/${restaurante}/${horario}`).on('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
-          statusEl.textContent = `${data.contador} pedidos - ${data.ativo ? '✅ Ativo' : '❌ Inativo'}`;
+          statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
           statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
         });
 
-        // Eventos dos botões
-        document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
-          db.ref(`horarios/${restaurante}/${horario}`).update({ ativo: true });
-        });
+        // Evento do botão "Desativar"
         document.getElementById(`btn-desativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
           db.ref(`horarios/${restaurante}/${horario}`).update({ ativo: false });
+          alert(`Horário ${horario} desativado!`);
         });
       });
     }
@@ -137,15 +171,22 @@
       alert('❌ Pedidos desativados!');
     });
 
-    // Zerar contadores de horários
-    document.getElementById('btnZerarHorarios').addEventListener('click', () => {
-      if (confirm('Zerar contadores de TODOS os horários?')) {
+    // Zerar TUDO e reativar horários
+    document.getElementById('btnZerarTudo').addEventListener('click', () => {
+      if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
+        // Zera contadores gerais
+        db.ref('contadores').set({ central: 0, campo: 0 });
+        
+        // Zera e reativa horários
         ['central', 'campo'].forEach(rest => {
+          const updates = {};
           HORARIOS[rest].forEach(horario => {
-            db.ref(`horarios/${rest}/${horario}`).update({ contador: 0 });
+            updates[`horarios/${rest}/${horario}`] = { ativo: true, contador: 0 };
           });
+          db.ref().update(updates);
         });
-        alert('Contadores de horários zerados!');
+        
+        alert('✅ Todos os contadores foram zerados e horários reativados!');
       }
     });
   </script>
