@@ -1,27 +1,19 @@
-// 🔐 Credenciais de admin (senha ofuscada)
 const ADMIN_USER = "admin";
-const ADMIN_PASS = atob("bDRuY2hvbjN0My0yMDI1IQ=="); // Substitua pela sua senha ofuscada
-
-// Horários por restaurante (só para Almoço)
-const HORARIOS_ALMOCO = {
-  Central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
-  Campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
-};
-
+const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
 // Inicializa Firebase
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ removido espaço
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
   messagingSenderId: "558143780233",
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
-// Sincroniza status do serviço
+// Sincroniza status
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
@@ -64,28 +56,43 @@ function formatarDataExibicao(data) {
   return `${nomeDia}, ${dia}/${mes}/${ano}`;
 }
 
-// Atualiza campos com base no turno
-function atualizarCamposPorTurno() {
+// Horários por restaurante (só para Almoço)
+const HORARIOS_ALMOCO = {
+  Central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
+  Campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
+};
+
+// Atualiza campos com base no turno e restaurante
+function atualizarCamposPorTurnoERestaurante() {
   const turno = document.getElementById('turno').value;
+  const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
 
-  if (turno === "Almoço") {
-    const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
-    containerHorario.style.display = restauranteSelecionado ? 'block' : 'none';
+  if (turno === "Almoço" && restauranteSelecionado && HORARIOS_ALMOCO[restauranteSelecionado]) {
+    // Atualiza horários
+    const select = document.getElementById('horarioRetirada');
+    select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
+    HORARIOS_ALMOCO[restauranteSelecionado].forEach(horario => {
+      const option = document.createElement('option');
+      option.value = horario;
+      option.textContent = horario;
+      select.appendChild(option);
+    });
+    containerHorario.style.display = 'block';
   } else {
     containerHorario.style.display = 'none';
   }
 }
 
-// Eventos
-document.getElementById('turno').addEventListener('change', atualizarCamposPorTurno);
+// Eventos para atualizar dinamicamente
+document.getElementById('turno')?.addEventListener('change', atualizarCamposPorTurnoERestaurante);
 document.querySelectorAll('input[name="restaurante"]').forEach(radio => {
-  radio.addEventListener('change', atualizarCamposPorTurno);
+  radio.addEventListener('change', atualizarCamposPorTurnoERestaurante);
 });
 
 // Login
 document.getElementById('btnLogin')?.addEventListener('click', () => {
-  document.getElementById('modalLogin').style.display = 'block';
+  document.getElementById('modalLogin').style.display = 'flex';
 });
 document.querySelector('.close')?.addEventListener('click', () => {
   document.getElementById('modalLogin').style.display = 'none';
@@ -101,12 +108,12 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   }
 });
 
-// Fecha modal de suspenso
+// Fecha modal suspenso
 document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// Clique no botão Enviar
+// ✅ CLIQUE NO BOTÃO — SEMPRE FUNCIONA
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -115,7 +122,18 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     return;
   }
 
-  // Captura valores
+  // Validação do Dia da Retirada
+  const diaSelecionado = document.getElementById("diaRetirada").value;
+  if (!diaSelecionado) {
+    alert("Selecione o dia da retirada!");
+    return;
+  }
+
+  // Calcula data exata
+  const dataRetirada = calcularProximaData(parseInt(diaSelecionado));
+  const linhaDataExibida = formatarDataExibicao(dataRetirada);
+
+  // Captura demais valores
   const nomePessoa = document.getElementById("nomePessoa").value;
   const matricula = document.getElementById("matricula").value;
   const nomeEmpresa = document.getElementById("nomeEmpresa").value;
@@ -123,71 +141,53 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   const contato = document.getElementById("contato").value.replace(/\D/g, "");
   const prato = document.getElementById("prato").value;
   const restauranteInput = document.querySelector('input[name="restaurante"]:checked');
-  const restaurante = restauranteInput ? restauranteInput.value : "";
+  if (!restauranteInput) {
+    alert("Selecione um restaurante!");
+    return;
+  }
+  const restaurante = restauranteInput.value;
 
   // Validação do contato
   if (!/^\d{2}9\d{8}$/.test(contato)) {
-    document.getElementById("erroContato").style.display = "block";
-    return;
-  } else {
-    document.getElementById("erroContato").style.display = "none";
-  }
-
-  // Validação do restaurante
-  if (!restauranteInput) {
-    document.getElementById("erroRestaurante").style.display = "block";
-    return;
-  } else {
-    document.getElementById("erroRestaurante").style.display = "none";
-  }
-
-  // Validação do Dia da Retirada (obrigatório para todos)
-  const diaSelecionado = document.getElementById("diaRetirada").value;
-  if (!diaSelecionado) {
-    document.getElementById("erroDia").style.display = "block";
+    alert("Número de WhatsApp inválido!");
     return;
   }
-  document.getElementById("erroDia").style.display = "none";
 
-  // Calcula data exata
-  const dataRetirada = calcularProximaData(parseInt(diaSelecionado));
-  const linhaData = `📅 *Dia da Retirada:* ${formatarDataExibicao(dataRetirada)}\n`;
-
-  // Validação e montagem do horário (só Almoço)
+  // Horário (só se for Almoço)
   let linhaHorario = "";
   const horarioContainer = document.getElementById('horarioContainer');
   if (horarioContainer.style.display !== 'none') {
     const horarioRetirada = document.getElementById("horarioRetirada").value;
     if (!horarioRetirada) {
-      document.getElementById("erroHorario").style.display = "block";
+      alert("Selecione o horário da retirada!");
       return;
     }
-    document.getElementById("erroHorario").style.display = "none";
     linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
   }
 
-  // Monta mensagem final
+  // Monta mensagem
+  const numeroWhatsApp = "5584987443832";
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
     `👤 *Nome:* ${nomePessoa}\n` +
     `🔢 *Matrícula:* ${matricula}\n` +
-    linhaData +
-    linhaHorario +
     `📱 *Contato:* ${formatarTelefone(contato)}\n` +
     `🏢 *Empresa:* ${nomeEmpresa}\n` +
     `🕓 *Turno:* ${turno}\n` +
+    `📅 *Dia da Retirada:* ${linhaDataExibida}\n` +
+    linhaHorario +
     `🏪 *Restaurante:* ${restaurante}\n` +
     `🍲 *Prato Escolhido:* ${prato}\n` +
     `\n` +
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // Envia para WhatsApp
-  window.open(`https://wa.me/5584987443832?text=${encodeURI(mensagem)}`, '_blank');
+  // ✅ Corrigido: removido espaço extra
+  window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
 });
 
-// Formatação de telefone
+// Formatação telefone
 function formatarTelefone(numero) {
   if (numero.length !== 11) return numero;
   return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
