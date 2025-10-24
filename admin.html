@@ -10,17 +10,26 @@
     .btn { display: block; width: 100%; padding: 14px; margin: 12px 0; border: none; border-radius: 8px; color: white; font-size: 16px; cursor: pointer; }
     .ativar { background: #25D366; }
     .desativar { background: #e74c3c; }
+    .zerar { background: #9b59b6; } /* Roxo para diferenciar */
+    .contador {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
     a { display: block; margin-top: 20px; color: #667eea; text-decoration: none; }
   </style>
   
-  <!-- Firebase -->
+  <!-- Firebase (corrigido sem espaços) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
       authDomain: "lanchonete-pedidos.firebaseapp.com",
-      databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+      databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ removido espaço
       projectId: "lanchonete-pedidos",
       storageBucket: "lanchonete-pedidos.firebasestorage.app",
       messagingSenderId: "558143780233",
@@ -37,23 +46,57 @@
     <button class="btn ativar" id="btnAtivar">✅ Ativar Pedidos</button>
     <button class="btn desativar" id="btnDesativar">❌ Desativar Pedidos</button>
     
+    <!-- ✅ NOVO: Contadores -->
+    <h3>📊 Contadores de Pedidos</h3>
+    <div class="contador">
+      🏪 Central: <span id="contadorCentral">0</span>
+    </div>
+    <div class="contador">
+      🏕️ Campo: <span id="contadorCampo">0</span>
+    </div>
+    <button class="btn zerar" id="btnZerar">🔄 Zerar Contadores</button>
+    
     <a href="index.html">← Voltar ao formulário</a>
   </div>
 
   <script>
-    firebase.database().ref('servico/ativo').on('value', (snapshot) => {
+    const db = firebase.database();
+
+    // Status atual
+    db.ref('servico/ativo').on('value', (snapshot) => {
       const ativo = snapshot.val() !== false;
       document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
     });
 
+    // ✅ NOVO: Sincroniza contadores
+    db.ref('contadores/central').on('value', (snapshot) => {
+      document.getElementById('contadorCentral').textContent = snapshot.val() || 0;
+    });
+    db.ref('contadores/campo').on('value', (snapshot) => {
+      document.getElementById('contadorCampo').textContent = snapshot.val() || 0;
+    });
+
+    // Ativar
     document.getElementById('btnAtivar').addEventListener('click', () => {
-      firebase.database().ref('servico/ativo').set(true);
+      db.ref('servico/ativo').set(true);
       alert('✅ Pedidos ativados!');
     });
 
+    // Desativar
     document.getElementById('btnDesativar').addEventListener('click', () => {
-      firebase.database().ref('servico/ativo').set(false);
+      db.ref('servico/ativo').set(false);
       alert('❌ Pedidos desativados!');
+    });
+
+    // ✅ NOVO: Zerar contadores
+    document.getElementById('btnZerar').addEventListener('click', () => {
+      if (confirm('Tem certeza que deseja zerar os contadores?')) {
+        db.ref('contadores').set({
+          central: 0,
+          campo: 0
+        });
+        alert('Contadores zerados!');
+      }
     });
   </script>
 </body>
