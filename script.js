@@ -13,7 +13,7 @@ firebase.initializeApp({
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
-// Sincroniza status
+// Sincroniza status do serviço
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
@@ -62,7 +62,7 @@ const HORARIOS_ALMOCO = {
   campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
 };
 
-// Atualiza campos com base no turno e restaurante (COM TEMPO REAL)
+// Atualiza campos com base no turno e restaurante (CORRIGIDO)
 function atualizarCamposPorTurnoERestaurante() {
   const turno = document.getElementById('turno').value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
@@ -71,37 +71,40 @@ function atualizarCamposPorTurnoERestaurante() {
   // Limpa listeners anteriores
   if (window.firebaseUnsubscribers) {
     window.firebaseUnsubscribers.forEach(unsub => unsub());
+    window.firebaseUnsubscribers = null;
   }
-  window.firebaseUnsubscribers = [];
 
   if (turno === "Almoço" && restauranteSelecionado) {
     const select = document.getElementById('horarioRetirada');
     const restauranteKey = restauranteSelecionado.toLowerCase();
 
-    // Função para atualizar a lista de horários
     const atualizarHorarios = () => {
+      // ✅ LIMPA TOTALMENTE antes de recarregar
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
-      let horariosAtivos = 0;
+      let carregados = 0;
+      let ativos = 0;
 
       HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
         firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
+          carregados++;
+
           if (data.ativo) {
             const option = document.createElement('option');
             option.value = horario;
             option.textContent = horario;
             select.appendChild(option);
-            horariosAtivos++;
+            ativos++;
           }
 
-          // Verifica se todos os horários foram carregados
-          const totalCarregados = Array.from(select.children).filter(opt => opt.value !== "").length;
-          if (totalCarregados === HORARIOS_ALMOCO[restauranteKey].length) {
-            if (horariosAtivos === 0) {
+          // Quando todos forem carregados
+          if (carregados === HORARIOS_ALMOCO[restauranteKey].length) {
+            if (ativos === 0) {
               select.innerHTML = '<option value="" disabled selected>Nenhum horário disponível</option>';
             } else {
-              const firstOption = select.removeChild(select.firstChild);
-              select.insertBefore(firstOption, select.firstChild);
+              // Garante que o placeholder fique no topo
+              const first = select.removeChild(select.firstChild);
+              select.insertBefore(first, select.firstChild);
             }
             containerHorario.style.display = 'block';
           }
@@ -109,22 +112,21 @@ function atualizarCamposPorTurnoERestaurante() {
       });
     };
 
-    // Atualiza imediatamente
+    // Carrega inicialmente
     atualizarHorarios();
 
-    // Escuta mudanças em tempo real em TODOS os horários
+    // Escuta mudanças em tempo real
+    window.firebaseUnsubscribers = [];
     HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
-      const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', () => {
-        atualizarHorarios(); // Reconstrói a lista quando qualquer horário muda
-      });
-      window.firebaseUnsubscribers.push(unsubscribe);
+      const unsub = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', atualizarHorarios);
+      window.firebaseUnsubscribers.push(unsub);
     });
   } else {
     containerHorario.style.display = 'none';
   }
 }
 
-// Eventos dinâmicos
+// Eventos
 document.getElementById('turno')?.addEventListener('change', atualizarCamposPorTurnoERestaurante);
 document.querySelectorAll('input[name="restaurante"]').forEach(radio => {
   radio.addEventListener('change', atualizarCamposPorTurnoERestaurante);
@@ -153,7 +155,7 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// CLIQUE NO BOTÃO — COM CONTADORES E HORÁRIOS
+// Envio do formulário
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -208,15 +210,10 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
 
   // Incrementa contadores
   const db = firebase.database();
-  
-  // Contador por restaurante
   db.ref('contadores/' + restaurante.toLowerCase()).transaction(current => (current || 0) + 1);
-  
-  // Contador por horário (só no Almoço)
   if (turno === "Almoço" && horarioRetirada) {
-    const restauranteKey = restaurante.toLowerCase();
-    const horarioRef = db.ref(`horarios/${restauranteKey}/${horarioRetirada}/contador`);
-    horarioRef.transaction(current => (current || 0) + 1);
+    const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
+    ref.transaction(current => (current || 0) + 1);
   }
 
   // Monta mensagem
@@ -241,7 +238,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
 });
 
-// Formatação telefone
+// Formatação de telefone
 function formatarTelefone(numero) {
   if (numero.length !== 11) return numero;
   return `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
