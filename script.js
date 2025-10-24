@@ -72,7 +72,6 @@ function atualizarCamposPorTurnoERestaurante() {
     const select = document.getElementById('horarioRetirada');
     select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
     
-    // Carrega horários do Firebase
     const restauranteKey = restauranteSelecionado.toLowerCase();
     let horariosCarregados = 0;
     let totalHorarios = HORARIOS_ALMOCO[restauranteKey].length;
@@ -80,17 +79,21 @@ function atualizarCamposPorTurnoERestaurante() {
     HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
       firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
         const data = snapshot.val() || { ativo: true, contador: 0 };
+        
+        // ✅ SÓ exibe horários com "ativo: true"
         if (data.ativo) {
           const option = document.createElement('option');
           option.value = horario;
           option.textContent = horario;
           select.appendChild(option);
         }
+        
         horariosCarregados++;
         if (horariosCarregados === totalHorarios) {
           if (select.options.length <= 1) {
             select.innerHTML = '<option value="" disabled selected>Nenhum horário disponível</option>';
           } else {
+            // Garante que "Escolha o horário" fique no topo
             const firstOption = select.removeChild(select.firstChild);
             select.insertBefore(firstOption, select.firstChild);
           }
