@@ -69,7 +69,7 @@ function incrementarContadorPorTurno(restaurante, turno) {
   db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
 }
 
-// Atualiza campos com base no turno e restaurante
+// ✅ Atualiza campos com base no turno e restaurante (CORRIGIDO)
 function atualizarCamposPorTurnoERestaurante() {
   const turno = document.getElementById('turno').value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
