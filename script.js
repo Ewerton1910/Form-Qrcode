@@ -1,7 +1,8 @@
 const ADMIN_USER = "admin";
 const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
+let servicoAtivo = true;
 
-// Inicializa Firebase (SEM ESPAÇOS!)
+// Inicializa Firebase
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
@@ -12,39 +13,40 @@ firebase.initializeApp({
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
-const db = firebase.database();
-
-// Atualiza visual do botão quando o status muda
-db.ref('servico/ativo').on('value', (snapshot) => {
-  const ativo = snapshot.val() !== false;
+// Sincroniza status
+firebase.database().ref('servico/ativo').on('value', (snapshot) => {
+  servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
   if (btn) {
-    btn.classList.toggle('btn-suspenso', !ativo);
-    btn.textContent = ativo 
+    btn.classList.toggle('btn-suspenso', !servicoAtivo);
+    btn.textContent = servicoAtivo 
       ? '📤 Enviar Pedido para WhatsApp' 
       : '❌ Serviço Suspenso';
   }
 });
 
-// Funções de data e horários (mantidas)
+// Calcula próxima data de Terça (2) ou Quinta (4)
 function calcularProximaData(diaSemana) {
   const hoje = new Date();
   const diaAtual = hoje.getDay();
   let diasParaAdicionar = 0;
-  if (diaSemana === 2) {
+
+  if (diaSemana === 2) { // Terça
     if (diaAtual < 2) diasParaAdicionar = 2 - diaAtual;
     else if (diaAtual === 2) diasParaAdicionar = 7;
     else diasParaAdicionar = 9 - diaAtual;
-  } else if (diaSemana === 4) {
+  } else if (diaSemana === 4) { // Quinta
     if (diaAtual < 4) diasParaAdicionar = 4 - diaAtual;
     else if (diaAtual === 4) diasParaAdicionar = 7;
     else diasParaAdicionar = 11 - diaAtual;
   }
+
   const data = new Date();
   data.setDate(data.getDate() + diasParaAdicionar);
   return data;
 }
 
+// Formata data como "Terça-Feira, 21/10/2025"
 function formatarDataExibicao(data) {
   const diasSemana = ["Domingo", "Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sábado"];
   const dia = String(data.getDate()).padStart(2, '0');
@@ -54,50 +56,62 @@ function formatarDataExibicao(data) {
   return `${nomeDia}, ${dia}/${mes}/${ano}`;
 }
 
+// Horários por restaurante
 const HORARIOS_ALMOCO = {
   central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
   campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
 };
 
-// Função corrigida de horários (sem afetar o status do serviço)
+// ✅ Incrementa contador por restaurante e turno
+function incrementarContadorPorTurno(restaurante, turno) {
+  const db = firebase.database();
+  const key = turno.toLowerCase(); // "Almoço" → "almoço"
+  db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
+}
+
+// Atualiza campos com base no turno e restaurante
 function atualizarCamposPorTurnoERestaurante() {
   const turno = document.getElementById('turno').value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
-  const select = document.getElementById('horarioRetirada');
 
-  containerHorario.style.display = 'none';
-  select.innerHTML = '<option value="" disabled selected>Selecione o horário</option>';
-
+  // Limpa listeners anteriores
   if (window.firebaseUnsubscribers) {
     window.firebaseUnsubscribers.forEach(unsub => unsub());
+    window.firebaseUnsubscribers = null;
   }
-  window.firebaseUnsubscribers = [];
 
   if (turno === "Almoço" && restauranteSelecionado) {
+    const select = document.getElementById('horarioRetirada');
     const restauranteKey = restauranteSelecionado.toLowerCase();
-    const horarios = HORARIOS_ALMOCO[restauranteKey] || [];
 
-    const carregarHorarios = () => {
+    const atualizarHorarios = () => {
+      // ✅ LIMPA TOTALMENTE antes de recarregar
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
       let carregados = 0;
-      let opcoes = [];
+      let ativos = 0;
 
-      horarios.forEach(horario => {
-        db.ref(`horarios/${restauranteKey}/${horario}`).once('value', snapshot => {
+      HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
+        firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
-          if (data.ativo) opcoes.push({ value: horario, text: horario });
-          if (carregados === horarios.length) {
-            select.innerHTML = '<option value="" disabled selected>Selecione o horário</option>';
-            opcoes.forEach(opt => {
-              const option = document.createElement('option');
-              option.value = opt.value;
-              option.textContent = opt.text;
-              select.appendChild(option);
-            });
-            if (opcoes.length === 0) {
+
+          if (data.ativo) {
+            const option = document.createElement('option');
+            option.value = horario;
+            option.textContent = horario;
+            select.appendChild(option);
+            ativos++;
+          }
+
+          // Quando todos forem carregados
+          if (carregados === HORARIOS_ALMOCO[restauranteKey].length) {
+            if (ativos === 0) {
               select.innerHTML = '<option value="" disabled selected>Nenhum horário disponível</option>';
+            } else {
+              // Garante que o placeholder fique no topo
+              const first = select.removeChild(select.firstChild);
+              select.insertBefore(first, select.firstChild);
             }
             containerHorario.style.display = 'block';
           }
@@ -105,11 +119,17 @@ function atualizarCamposPorTurnoERestaurante() {
       });
     };
 
-    carregarHorarios();
-    horarios.forEach(horario => {
-      const unsub = db.ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
+    // Carrega inicialmente
+    atualizarHorarios();
+
+    // Escuta mudanças em tempo real
+    window.firebaseUnsubscribers = [];
+    HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
+      const unsub = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', atualizarHorarios);
       window.firebaseUnsubscribers.push(unsub);
     });
+  } else {
+    containerHorario.style.display = 'none';
   }
 }
 
@@ -142,12 +162,12 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// ✅ CLIQUE NO BOTÃO — VERIFICA STATUS EM TEMPO REAL
+// Envio do formulário
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
-  // ✅ Lê o status ATUAL do Firebase (não usa variável global)
-  db.ref('servico/ativo').once('value', (snapshot) => {
+  // ✅ Lê o status ATUAL do Firebase no clique
+  firebase.database().ref('servico/ativo').once('value', (snapshot) => {
     const servicoAtivo = snapshot.val() !== false;
 
     if (!servicoAtivo) {
@@ -155,13 +175,18 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
       return;
     }
 
-    // Resto do código de envio (igual ao anterior)
+    // Validação do Dia da Retirada
     const diaSelecionado = document.getElementById("diaRetirada").value;
-    if (!diaSelecionado) return alert("Selecione o dia da retirada!");
+    if (!diaSelecionado) {
+      alert("Selecione o dia da retirada!");
+      return;
+    }
 
+    // Calcula data exata
     const dataRetirada = calcularProximaData(parseInt(diaSelecionado));
     const linhaDataExibida = formatarDataExibicao(dataRetirada);
 
+    // Captura demais valores
     const nomePessoa = document.getElementById("nomePessoa").value;
     const matricula = document.getElementById("matricula").value;
     const nomeEmpresa = document.getElementById("nomeEmpresa").value;
@@ -169,27 +194,44 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     const contato = document.getElementById("contato").value.replace(/\D/g, "");
     const prato = document.getElementById("prato").value;
     const restauranteInput = document.querySelector('input[name="restaurante"]:checked');
-    if (!restauranteInput) return alert("Selecione um restaurante!");
+    if (!restauranteInput) {
+      alert("Selecione um restaurante!");
+      return;
+    }
     const restaurante = restauranteInput.value;
 
-    if (!/^\d{2}9\d{8}$/.test(contato)) return alert("Número de WhatsApp inválido!");
+    // Validação do contato
+    if (!/^\d{2}9\d{8}$/.test(contato)) {
+      alert("Número de WhatsApp inválido!");
+      return;
+    }
 
+    // Horário (só se for Almoço)
     let linhaHorario = "";
     let horarioRetirada = "";
     const horarioContainer = document.getElementById('horarioContainer');
     if (horarioContainer.style.display !== 'none') {
       horarioRetirada = document.getElementById("horarioRetirada").value;
-      if (!horarioRetirada) return alert("Selecione o horário da retirada!");
+      if (!horarioRetirada) {
+        alert("Selecione o horário da retirada!");
+        return;
+      }
       linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
     }
 
     // Incrementa contadores
-    db.ref('contadores/' + restaurante.toLowerCase()).transaction(current => (current || 0) + 1);
+    const db = firebase.database();
+    
+    // ✅ Contador por restaurante e turno
+    incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
+    
+    // Contador por horário (só no Almoço)
     if (turno === "Almoço" && horarioRetirada) {
-      db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`).transaction(current => (current || 0) + 1);
+      const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
+      ref.transaction(current => (current || 0) + 1);
     }
 
-    // Envia para WhatsApp
+    // Monta mensagem
     const numeroWhatsApp = "5584987443832";
     const mensagem =
       `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
@@ -207,6 +249,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
       `✅ Pedido registrado com sucesso!\n` +
       `📲 Entraremos em contato se houver alteração.`;
 
+    // Envia para WhatsApp
     window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
   });
 });
