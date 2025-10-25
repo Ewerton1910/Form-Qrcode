@@ -69,67 +69,91 @@ function incrementarContadorPorTurno(restaurante, turno) {
   db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
 }
 
-// ✅ Atualiza campos com base no turno e restaurante (CORRIGIDO)
+// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO)
+let isUpdating = false; // Protege contra chamadas simultâneas
+
 function atualizarCamposPorTurnoERestaurante() {
-  const turno = document.getElementById('turno').value;
+  // ✅ Proteção 1: Evita execuções simultâneas
+  if (isUpdating) return;
+  isUpdating = true;
+
+  const turno = document.getElementById('turno')?.value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
+  const select = document.getElementById('horarioRetirada');
 
-  // Limpa listeners anteriores
+  // ✅ Proteção 2: Limpa tudo antes
+  if (containerHorario) containerHorario.style.display = 'none';
+  if (select) select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+
+  // ✅ Proteção 3: Remove todos os listeners antigos
   if (window.firebaseUnsubscribers) {
-    window.firebaseUnsubscribers.forEach(unsub => unsub());
-    window.firebaseUnsubscribers = null;
+    window.firebaseUnsubscribers.forEach(unsub => {
+      if (typeof unsub === 'function') unsub();
+    });
+    window.firebaseUnsubscribers = [];
   }
 
+  // Só continua se for Almoço e tiver restaurante selecionado
   if (turno === "Almoço" && restauranteSelecionado) {
-    const select = document.getElementById('horarioRetirada');
     const restauranteKey = restauranteSelecionado.toLowerCase();
+    const horarios = HORARIOS_ALMOCO[restauranteKey];
 
-    const atualizarHorarios = () => {
-      // ✅ LIMPA TOTALMENTE antes de recarregar
+    if (!horarios) {
+      isUpdating = false;
+      return;
+    }
+
+    // Função interna para carregar horários
+    const carregarHorarios = () => {
+      // ✅ Limpa novamente (garantia total)
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
       let carregados = 0;
-      let ativos = 0;
+      let opcoesAtivas = [];
 
-      HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
+      horarios.forEach(horario => {
         firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
 
+          // ✅ Só adiciona se estiver ativo
           if (data.ativo) {
-            const option = document.createElement('option');
-            option.value = horario;
-            option.textContent = horario;
-            select.appendChild(option);
-            ativos++;
+            opcoesAtivas.push({ value: horario, text: horario });
           }
 
-          // Quando todos forem carregados
-          if (carregados === HORARIOS_ALMOCO[restauranteKey].length) {
-            if (ativos === 0) {
+          // Quando todos os horários forem carregados
+          if (carregados === horarios.length) {
+            // ✅ Limpa e reconstrói o select
+            select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
+            
+            opcoesAtivas.forEach(opt => {
+              const option = document.createElement('option');
+              option.value = opt.value;
+              option.textContent = opt.text;
+              select.appendChild(option);
+            });
+
+            if (opcoesAtivas.length === 0) {
               select.innerHTML = '<option value="" disabled selected>Nenhum horário disponível</option>';
-            } else {
-              // Garante que o placeholder fique no topo
-              const first = select.removeChild(select.firstChild);
-              select.insertBefore(first, select.firstChild);
             }
+
             containerHorario.style.display = 'block';
+            isUpdating = false; // Libera para próxima chamada
           }
         });
       });
     };
 
-    // Carrega inicialmente
-    atualizarHorarios();
+    // Carrega imediatamente
+    carregarHorarios();
 
-    // Escuta mudanças em tempo real
-    window.firebaseUnsubscribers = [];
-    HORARIOS_ALMOCO[restauranteKey].forEach(horario => {
-      const unsub = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', atualizarHorarios);
-      window.firebaseUnsubscribers.push(unsub);
+    // ✅ Adiciona listeners para atualização em tempo real
+    horarios.forEach(horario => {
+      const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
+      window.firebaseUnsubscribers.push(unsubscribe);
     });
   } else {
-    containerHorario.style.display = 'none';
+    isUpdating = false; // Libera mesmo se não for Almoço
   }
 }
 
