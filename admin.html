@@ -82,11 +82,19 @@
     <!-- Contadores Gerais -->
     <div class="section">
       <h3>📊 Contadores Gerais</h3>
+      
       <div class="contador-geral">
-        🏪 Central: <span id="contadorCentral">0</span>
+        🏪 Central - Almoço: <span id="contadorCentralAlmoco">0</span>
       </div>
       <div class="contador-geral">
-        🏕️ Campo: <span id="contadorCampo">0</span>
+        🏪 Central - Janta: <span id="contadorCentralJanta">0</span>
+      </div>
+      
+      <div class="contador-geral">
+        🏕️ Campo - Almoço: <span id="contadorCampoAlmoco">0</span>
+      </div>
+      <div class="contador-geral">
+        🏕️ Campo - Janta: <span id="contadorCampoJanta">0</span>
       </div>
     </div>
 
@@ -119,12 +127,18 @@
       document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
     });
 
-    // Sincroniza contadores gerais
-    db.ref('contadores/central').on('value', (snapshot) => {
-      document.getElementById('contadorCentral').textContent = snapshot.val() || 0;
+    // ✅ Sincroniza contadores por restaurante e turno
+    db.ref('contadores/central/almoço').on('value', (snapshot) => {
+      document.getElementById('contadorCentralAlmoco').textContent = snapshot.val() || 0;
     });
-    db.ref('contadores/campo').on('value', (snapshot) => {
-      document.getElementById('contadorCampo').textContent = snapshot.val() || 0;
+    db.ref('contadores/central/janta').on('value', (snapshot) => {
+      document.getElementById('contadorCentralJanta').textContent = snapshot.val() || 0;
+    });
+    db.ref('contadores/campo/almoço').on('value', (snapshot) => {
+      document.getElementById('contadorCampoAlmoco').textContent = snapshot.val() || 0;
+    });
+    db.ref('contadores/campo/janta').on('value', (snapshot) => {
+      document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
     });
 
     // Sincroniza horários
@@ -174,8 +188,11 @@
     // Zerar TUDO e reativar horários
     document.getElementById('btnZerarTudo').addEventListener('click', () => {
       if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
-        // Zera contadores gerais
-        db.ref('contadores').set({ central: 0, campo: 0 });
+        // ✅ Zera contadores por restaurante e turno
+        db.ref('contadores').set({
+          central: { almoço: 0, janta: 0 },
+          campo: { almoço: 0, janta: 0 }
+        });
         
         // Zera e reativa horários
         ['central', 'campo'].forEach(rest => {
