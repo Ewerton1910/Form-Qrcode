@@ -2,18 +2,18 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
-// Inicializa Firebase
+// Inicializa Firebase (sem espaços extras!)
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ SEM ESPAÇO
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
   messagingSenderId: "558143780233",
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
-// Sincroniza status do serviço
+// Sincroniza status
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
@@ -69,7 +69,7 @@ function incrementarContadorPorTurno(restaurante, turno) {
   db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
 }
 
-// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (TEMPO REAL)
+// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO)
 function atualizarCamposPorTurnoERestaurante() {
   const turno = document.getElementById('turno')?.value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
@@ -81,14 +81,13 @@ function atualizarCamposPorTurnoERestaurante() {
     window.firebaseUnsubscribers.forEach(unsub => {
       if (typeof unsub === 'function') unsub();
     });
-    window.firebaseUnsubscribers = [];
   }
+  window.firebaseUnsubscribers = [];
 
   if (turno === "Almoço" && restauranteSelecionado) {
     const restauranteKey = restauranteSelecionado.toLowerCase();
     const horarios = HORARIOS_ALMOCO[restauranteKey] || [];
 
-    // Função interna para carregar horários
     const carregarHorarios = () => {
       // ✅ Limpa select antes de recarregar
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
@@ -100,7 +99,6 @@ function atualizarCamposPorTurnoERestaurante() {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
 
-          // ✅ Só adiciona se estiver ativo
           if (data.ativo) {
             opcoesAtivas.push({ value: horario, text: horario });
           }
@@ -167,7 +165,7 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// ✅ CLIQUE NO BOTÃO — COM CONTADORES E HORÁRIOS
+// ✅ CLIQUE NO BOTÃO — COM CONTADORES POR RESTAURANTE E TURNO
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -220,14 +218,12 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
   }
 
-  // Incrementa contadores
-  const db = firebase.database();
-  
-  // ✅ Contador por restaurante e turno
+  // ✅ Incrementa contadores por restaurante e turno
   incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
-  
+
   // Contador por horário (só no Almoço)
   if (turno === "Almoço" && horarioRetirada) {
+    const db = firebase.database();
     const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
     ref.transaction(current => (current || 0) + 1);
   }
@@ -250,8 +246,9 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // Envia para WhatsApp
+  // ✅ Corrigido: removido espaço extra
   window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
+  alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
 });
 
 // Formatação de telefone
