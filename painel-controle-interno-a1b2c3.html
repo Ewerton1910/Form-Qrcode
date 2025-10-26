@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin - Controle</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin-styles.css" />
   
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -24,7 +24,7 @@
 </head>
 <body>
   <div class="container">
-    <!-- Contadores fixos no canto superior direito (móvel: aparece no topo) -->
+    <!-- Contadores fixos no canto superior direito -->
     <div class="right-column-fixed">
       <div class="contadores-box">
         <h3>📊 Contadores Gerais</h3>
@@ -98,7 +98,7 @@
       document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
     });
 
-    // Carrega horários com botões
+    // Carrega horários com botões de Ativar/Desativar
     function carregarHorarios(restaurante, containerId) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
@@ -113,9 +113,14 @@
             <span>${horario}</span>
             <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
           </div>
-          <button class="btn btn-desativar small" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
-            ❌ Desativar
-          </button>
+          <div class="horario-actions">
+            <button class="btn btn-ativar small" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">
+              ✅ Ativar
+            </button>
+            <button class="btn btn-desativar small" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
+              ❌ Desativar
+            </button>
+          </div>
         `;
         container.appendChild(item);
 
@@ -126,6 +131,12 @@
           const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
           statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
           statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
+        });
+
+        // Botão Ativar
+        document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
+          statusRef.update({ ativo: true });
+          alert(`✅ Horário ${horario} ativado!`);
         });
 
         // Botão Desativar
@@ -139,7 +150,7 @@
     carregarHorarios('central', 'horarios-central');
     carregarHorarios('campo', 'horarios-campo');
 
-    // Ativar/Desativar serviço
+    // Ativar/Desativar serviço geral
     document.getElementById('btnAtivar').addEventListener('click', () => {
       db.ref('servico/ativo').set(true);
       alert('✅ Pedidos ativados!');
@@ -149,7 +160,7 @@
       alert('❌ Pedidos desativados!');
     });
 
-    // Zerar tudo
+    // Zerar tudo e reativar horários
     document.getElementById('btnZerarTudo').addEventListener('click', () => {
       if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
         db.ref('contadores').set({
