@@ -59,7 +59,7 @@ function formatarDataExibicao(data) {
 // Horários por restaurante
 const HORARIOS_ALMOCO = {
   central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
-  campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
+  campo: ["12:00", "12:15", "12:30", "12:45", "13:00"]
 };
 
 // ✅ Incrementa contador por restaurante e turno
