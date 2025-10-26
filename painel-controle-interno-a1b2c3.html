@@ -34,6 +34,7 @@
       cursor: pointer;
       font-size: 14px;
     }
+    .btn-ativar { background: #27ae60; color: white; margin-right: 5px; }
     .btn-desativar { background: #e74c3c; color: white; }
     .btn-zerar { 
       background: #9b59b6; 
@@ -141,32 +142,44 @@
       document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
     });
 
-    // Sincroniza horários
+    // ✅ Função atualizada: carrega horários com botões de ativar/desativar
     function carregarHorarios(restaurante, containerId) {
       const container = document.getElementById(containerId);
+      container.innerHTML = ''; // ✅ Limpa tudo antes
+
       HORARIOS[restaurante].forEach(horario => {
         const item = document.createElement('div');
         item.className = 'horario-item';
         item.id = `item-${restaurante}-${horario.replace(':', '')}`;
+        
+        // ✅ Cria os botões separados
         item.innerHTML = `
           <span>${horario}</span>
           <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
-          <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">Desativar</button>
+          <button class="btn btn-ativar" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">✅</button>
+          <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">❌</button>
         `;
         container.appendChild(item);
 
-        // Sincroniza status e contador
-        db.ref(`horarios/${restaurante}/${horario}`).on('value', (snapshot) => {
+        // ✅ Sincroniza status e contador em tempo real
+        const statusRef = db.ref(`horarios/${restaurante}/${horario}`);
+        statusRef.on('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
           statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
           statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
         });
 
-        // Evento do botão "Desativar"
+        // ✅ Botão Ativar
+        document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
+          statusRef.update({ ativo: true });
+          alert(`✅ Horário ${horario} ativado!`);
+        });
+
+        // ✅ Botão Desativar
         document.getElementById(`btn-desativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
-          db.ref(`horarios/${restaurante}/${horario}`).update({ ativo: false });
-          alert(`Horário ${horario} desativado!`);
+          statusRef.update({ ativo: false });
+          alert(`❌ Horário ${horario} desativado!`);
         });
       });
     }
