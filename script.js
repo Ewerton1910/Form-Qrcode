@@ -19,8 +19,8 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   const btn = document.getElementById('btnEnviar');
   if (btn) {
     btn.classList.toggle('btn-suspenso', !servicoAtivo);
-    btn.textContent = servicoAtivo 
-      ? '📤 Enviar Pedido para WhatsApp' 
+    btn.textContent = servicoAtivo
+      ? '📤 Enviar Pedido para WhatsApp'
       : '❌ Serviço Suspenso';
   }
 });
@@ -69,14 +69,24 @@ function incrementarContadorPorTurno(restaurante, turno) {
   db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
 }
 
-// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (TEMPO REAL)
+// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO E TEMPO REAL)
+let isUpdating = false; // Protege contra chamadas simultâneas
+
 function atualizarCamposPorTurnoERestaurante() {
+  // ✅ Proteção 1: Evita execuções simultâneas
+  if (isUpdating) return;
+  isUpdating = true;
+
   const turno = document.getElementById('turno')?.value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
   const select = document.getElementById('horarioRetirada');
 
-  // ✅ Limpa listeners anteriores
+  // ✅ Proteção 2: Limpa tudo antes
+  if (containerHorario) containerHorario.style.display = 'none';
+  if (select) select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+
+  // ✅ Proteção 3: Remove todos os listeners antigos
   if (window.firebaseUnsubscribers) {
     window.firebaseUnsubscribers.forEach(unsub => {
       if (typeof unsub === 'function') unsub();
@@ -84,12 +94,19 @@ function atualizarCamposPorTurnoERestaurante() {
     window.firebaseUnsubscribers = [];
   }
 
+  // Só continua se for Almoço e tiver restaurante selecionado
   if (turno === "Almoço" && restauranteSelecionado) {
     const restauranteKey = restauranteSelecionado.toLowerCase();
-    const horarios = HORARIOS_ALMOCO[restauranteKey] || [];
+    const horarios = HORARIOS_ALMOCO[restauranteKey];
 
+    if (!horarios) {
+      isUpdating = false;
+      return;
+    }
+
+    // Função interna para carregar horários
     const carregarHorarios = () => {
-      // ✅ Limpa select antes de recarregar
+      // ✅ Limpa novamente (garantia total)
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
       let carregados = 0;
       let opcoesAtivas = [];
@@ -99,13 +116,16 @@ function atualizarCamposPorTurnoERestaurante() {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
 
+          // ✅ Só adiciona se estiver ativo
           if (data.ativo) {
             opcoesAtivas.push({ value: horario, text: horario });
           }
 
           // Quando todos os horários forem carregados
           if (carregados === horarios.length) {
+            // ✅ Limpa e reconstrói o select
             select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
+
             opcoesAtivas.forEach(opt => {
               const option = document.createElement('option');
               option.value = opt.value;
@@ -118,23 +138,25 @@ function atualizarCamposPorTurnoERestaurante() {
             }
 
             containerHorario.style.display = 'block';
+            isUpdating = false; // Libera para próxima chamada
           }
         });
       });
     };
 
-    // ✅ Carrega imediatamente
+    // Carrega imediatamente
     carregarHorarios();
 
-    // ✅ Escuta mudanças em tempo real em CADA horário
+    // ✅ Adiciona listeners para atualização em tempo real de CADA horário
     horarios.forEach(horario => {
       const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
       window.firebaseUnsubscribers.push(unsubscribe);
     });
   } else {
-    containerHorario.style.display = 'none';
+    isUpdating = false; // Libera mesmo se não for Almoço
   }
 }
+
 
 // Eventos
 document.getElementById('turno')?.addEventListener('change', atualizarCamposPorTurnoERestaurante);
@@ -153,7 +175,6 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   const user = document.getElementById('loginUser')?.value;
   const pass = document.getElementById('loginPass')?.value;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    // ✅ Redireciona com chave secreta
     window.location.href = 'painel-controle-interno-a1b2c3.html?chave=AcessoLiberado123';
   } else {
     document.getElementById('loginError').style.display = 'block';
@@ -167,7 +188,7 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
 });
 
 // Envio do formulário
-document.getElementById('btnEnviar').addEventListener('click', function(e) {
+document.getElementById('btnEnviar').addEventListener('click', function (e) {
   e.preventDefault();
 
   // ✅ Lê o status ATUAL do Firebase no clique
@@ -225,10 +246,10 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
 
     // Incrementa contadores
     const db = firebase.database();
-    
+
     // ✅ Contador por restaurante e turno
     incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
-    
+
     // Contador por horário (só no Almoço)
     if (turno === "Almoço" && horarioRetirada) {
       const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
