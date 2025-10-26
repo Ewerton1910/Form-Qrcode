@@ -40,6 +40,10 @@ body {
   margin: 0;
 }
 
+h4 {
+  text-align: center;
+}
+
 .status-actions {
   display: flex;
   flex-direction: column;
