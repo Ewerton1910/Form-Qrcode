@@ -81,14 +81,13 @@ function atualizarCamposPorTurnoERestaurante() {
     window.firebaseUnsubscribers.forEach(unsub => {
       if (typeof unsub === 'function') unsub();
     });
+    window.firebaseUnsubscribers = [];
   }
-  window.firebaseUnsubscribers = [];
 
   if (turno === "Almoço" && restauranteSelecionado) {
     const restauranteKey = restauranteSelecionado.toLowerCase();
     const horarios = HORARIOS_ALMOCO[restauranteKey] || [];
 
-    // Função para carregar e atualizar horários
     const carregarHorarios = () => {
       // ✅ Limpa select antes de recarregar
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
@@ -166,20 +165,6 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
 document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
-
-// ✅ Verifica chave secreta no admin (segurança básica)
-function verificarAcessoAdmin() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const chave = urlParams.get('chave');
-  if (chave !== 'AcessoLiberado123') {
-    alert("Acesso negado!");
-    window.location.href = 'index.html';
-    throw new Error("Acesso negado!");
-  }
-}
-
-// Chame esta função no topo do seu admin.html
-// verificarAcessoAdmin();
 
 // Envio do formulário
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
