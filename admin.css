@@ -69,7 +69,7 @@ h4 {
 }
 
 .status span:first-child {
-  font-size: 0.9rem;
+  /*font-size: 0.9rem;*/
 }
 
 .status span:last-child {
