@@ -6,7 +6,7 @@
   <title>Admin - Controle</title>
   <link rel="stylesheet" href="styles.css" />
   
-  <!-- Firebase -->
+  <!-- 🔥 Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script>
@@ -21,50 +21,181 @@
     };
     firebase.initializeApp(firebaseConfig);
   </script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .section {
+      margin-bottom: 25px;
+    }
+    h2, h3, h4 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn-ativar { background: #2ecc71; }
+    .btn-desativar { background: #e74c3c; }
+    .btn-zerar { background: #9b59b6; color: white; width: 100%; padding: 14px; margin: 20px 0; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
+    .status { font-weight: bold; }
+    .status.ativo { color: #27ae60; }
+    .status.inativo { color: #e74c3c; }
+    a { display: block; margin-top: 20px; color: #667eea; text-decoration: none; text-align: center; }
+    
+    /* Grid para 2 colunas */
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+    
+    /* Contadores gerais no topo (móvel) */
+    .contadores-topo {
+      display: none;
+      grid-column: 1 / -1;
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .contador-geral {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    
+    /* Contadores laterais (desktop) */
+    .contadores-lateral {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+    
+    /* Horários */
+    .horario-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 8px 0;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .contadores-lateral {
+        display: none;
+      }
+      .contadores-topo {
+        display: block;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h2>⚙️ Painel de Administração</h2>
+    <div class="header">
+      <h2>⚙️ Painel de Administração</h2>
+      <div>
+        <p><strong>Status:</strong> <span id="status">Carregando...</span></p>
+        <button class="btn btn-ativar" id="btnAtivar">✅ Ativar Pedidos</button>
+        <button class="btn btn-desativar" id="btnDesativar">❌ Desativar Pedidos</button>
+      </div>
+    </div>
     
-    <!-- Status do serviço -->
-    <div class="section">
-      <p><strong>Status:</strong> <span id="status">Carregando...</span></p>
-      <button class="btn-zerar" id="btnAtivar" style="background:#2ecc71;">✅ Ativar Pedidos</button>
-      <button class="btn-zerar" id="btnDesativar" style="background:#e74c3c;margin-top:10px;">❌ Desativar Pedidos</button>
+    <div class="grid">
+      <!-- Coluna 1: Controles de horários -->
+      <div class="section">
+        <h3>🕓 Controles de Horários</h3>
+        
+        <h4>🏪 Central</h4>
+        <div id="horarios-central"></div>
+        
+        <h4>🏕️ Campo</h4>
+        <div id="horarios-campo"></div>
+        
+        <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
+      </div>
+      
+      <!-- Coluna 2: Contadores gerais (desktop) -->
+      <div class="contadores-lateral section">
+        <h3>📊 Contadores Gerais</h3>
+        <div class="contador-geral">
+          🏪 Central - Almoço: <span id="contadorCentralAlmoco">0</span>
+        </div>
+        <div class="contador-geral">
+          🏪 Central - Janta: <span id="contadorCentralJanta">0</span>
+        </div>
+        <div class="contador-geral">
+          🏕️ Campo - Almoço: <span id="contadorCampoAlmoco">0</span>
+        </div>
+        <div class="contador-geral">
+          🏕️ Campo - Janta: <span id="contadorCampoJanta">0</span>
+        </div>
+      </div>
     </div>
-
-    <!-- Contadores Gerais -->
-    <div class="section">
+    
+    <!-- Contadores gerais no topo (móvel) -->
+    <div class="contadores-topo section">
       <h3>📊 Contadores Gerais</h3>
-      
       <div class="contador-geral">
-        🏪 Central - Almoço: <span id="contadorCentralAlmoco">0</span>
+        🏪 Central - Almoço: <span id="contadorCentralAlmocoTopo">0</span>
       </div>
       <div class="contador-geral">
-        🏪 Central - Janta: <span id="contadorCentralJanta">0</span>
-      </div>
-      
-      <div class="contador-geral">
-        🏕️ Campo - Almoço: <span id="contadorCampoAlmoco">0</span>
+        🏪 Central - Janta: <span id="contadorCentralJantaTopo">0</span>
       </div>
       <div class="contador-geral">
-        🏕️ Campo - Janta: <span id="contadorCampoJanta">0</span>
+        🏕️ Campo - Almoço: <span id="contadorCampoAlmocoTopo">0</span>
+      </div>
+      <div class="contador-geral">
+        🏕️ Campo - Janta: <span id="contadorCampoJantaTopo">0</span>
       </div>
     </div>
-
-    <!-- Contadores por Horário -->
-    <div class="section">
-      <h3>🕒 Controles de Horários</h3>
-      
-      <h4>🏪 Central</h4>
-      <div id="horarios-central" class="horarios-container"></div>
-      
-      <h4>🏕️ Campo</h4>
-      <div id="horarios-campo" class="horarios-container"></div>
-      
-      <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
-    </div>
-
+    
     <a href="index.html">← Voltar ao formulário</a>
   </div>
 
@@ -72,7 +203,7 @@
     const db = firebase.database();
     const HORARIOS = {
       central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
-      campo: ["12:00", "12:15", "12:30", "12:45", "13:00"]
+      campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
     };
 
     // Sincroniza status do serviço
@@ -83,45 +214,41 @@
 
     // ✅ Sincroniza contadores por restaurante e turno
     db.ref('contadores/central/almoço').on('value', (snapshot) => {
-      document.getElementById('contadorCentralAlmoco').textContent = snapshot.val() || 0;
+      const valor = snapshot.val() || 0;
+      document.getElementById('contadorCentralAlmoco').textContent = valor;
+      document.getElementById('contadorCentralAlmocoTopo').textContent = valor;
     });
     db.ref('contadores/central/janta').on('value', (snapshot) => {
-      document.getElementById('contadorCentralJanta').textContent = snapshot.val() || 0;
+      const valor = snapshot.val() || 0;
+      document.getElementById('contadorCentralJanta').textContent = valor;
+      document.getElementById('contadorCentralJantaTopo').textContent = valor;
     });
     db.ref('contadores/campo/almoço').on('value', (snapshot) => {
-      document.getElementById('contadorCampoAlmoco').textContent = snapshot.val() || 0;
+      const valor = snapshot.val() || 0;
+      document.getElementById('contadorCampoAlmoco').textContent = valor;
+      document.getElementById('contadorCampoAlmocoTopo').textContent = valor;
     });
     db.ref('contadores/campo/janta').on('value', (snapshot) => {
-      document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
+      const valor = snapshot.val() || 0;
+      document.getElementById('contadorCampoJanta').textContent = valor;
+      document.getElementById('contadorCampoJantaTopo').textContent = valor;
     });
 
-    // ✅ Função para carregar horários com cartões
+    // ✅ Função atualizada: carrega horários com botões de ativar/desativar
     function carregarHorarios(restaurante, containerId) {
       const container = document.getElementById(containerId);
-      container.innerHTML = ''; // Limpa tudo
+      container.innerHTML = ''; // ✅ Limpa tudo antes
 
       HORARIOS[restaurante].forEach(horario => {
         const item = document.createElement('div');
         item.className = 'horario-item';
         item.id = `item-${restaurante}-${horario.replace(':', '')}`;
         
-        // Cria o cartão
+        // ✅ Cria os botões separados
         item.innerHTML = `
-          <div class="horario-card">
-            <div class="horario-info">
-              <span class="horario-time">${horario}</span>
-              <span class="horario-count"><span id="count-${restaurante}-${horario.replace(':', '')}">0</span> pedidos</span>
-              <span class="horario-status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
-            </div>
-            <div class="horario-actions">
-              <button class="btn btn-ativar" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">
-                <span class="icon">✅</span> Ativar
-              </button>
-              <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
-                <span class="icon">❌</span> Desativar
-              </button>
-            </div>
-          </div>
+          <span>${horario}</span>
+          <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
+          <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}" style="background:#e74c3c;color:white;padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Desativar</button>
         `;
         container.appendChild(item);
 
@@ -129,18 +256,9 @@
         const statusRef = db.ref(`horarios/${restaurante}/${horario}`);
         statusRef.on('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
-          const countEl = document.getElementById(`count-${restaurante}-${horario.replace(':', '')}`);
           const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
-          
-          countEl.textContent = data.contador;
-          statusEl.textContent = data.ativo ? '✅' : '❌';
-          statusEl.className = `horario-status ${data.ativo ? 'ativo' : 'inativo'}`;
-        });
-
-        // ✅ Botão Ativar
-        document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
-          statusRef.update({ ativo: true });
-          alert(`✅ Horário ${horario} ativado!`);
+          statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
+          statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
         });
 
         // ✅ Botão Desativar
@@ -165,7 +283,7 @@
       alert('❌ Pedidos desativados!');
     });
 
-    // Zerar TUDO e reativar horários
+    // Zerar contadores
     document.getElementById('btnZerarTudo').addEventListener('click', () => {
       if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
         // ✅ Zera contadores por restaurante e turno
