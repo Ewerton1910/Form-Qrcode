@@ -4,54 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin - Controle</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
-    .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; }
-    .section { margin-bottom: 25px; }
-    h2, h3, h4 { text-align: center; margin-bottom: 15px; }
-    .contador-geral {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 15px 0;
-      padding: 12px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .horario-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      margin: 8px 0;
-      background: #f8f9fa;
-      border-radius: 6px;
-    }
-    .btn {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .btn-ativar { background: #27ae60; color: white; margin-right: 5px; }
-    .btn-desativar { background: #e74c3c; color: white; }
-    .btn-zerar { 
-      background: #9b59b6; 
-      color: white; 
-      width: 100%; 
-      padding: 14px; 
-      margin: 20px 0; 
-      border: none; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-size: 16px; 
-    }
-    .status { font-weight: bold; }
-    .status.ativo { color: #27ae60; }
-    .status.inativo { color: #e74c3c; }
-    a { display: block; text-align: center; margin-top: 20px; color: #667eea; text-decoration: none; }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
   
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -101,13 +54,13 @@
 
     <!-- Contadores por Horário -->
     <div class="section">
-      <h3>🕓 Contadores por Horário</h3>
+      <h3>🕒 Controles de Horários</h3>
       
       <h4>🏪 Central</h4>
-      <div id="horarios-central"></div>
+      <div id="horarios-central" class="horarios-container"></div>
       
       <h4>🏕️ Campo</h4>
-      <div id="horarios-campo"></div>
+      <div id="horarios-campo" class="horarios-container"></div>
       
       <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
     </div>
@@ -142,22 +95,33 @@
       document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
     });
 
-    // ✅ Função atualizada: carrega horários com botões de ativar/desativar
+    // ✅ Função para carregar horários com cartões
     function carregarHorarios(restaurante, containerId) {
       const container = document.getElementById(containerId);
-      container.innerHTML = ''; // ✅ Limpa tudo antes
+      container.innerHTML = ''; // Limpa tudo
 
       HORARIOS[restaurante].forEach(horario => {
         const item = document.createElement('div');
         item.className = 'horario-item';
         item.id = `item-${restaurante}-${horario.replace(':', '')}`;
         
-        // ✅ Cria os botões separados
+        // Cria o cartão
         item.innerHTML = `
-          <span>${horario}</span>
-          <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
-          <button class="btn btn-ativar" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">Ativar ✅</button>
-          <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">Desativar ❌</button>
+          <div class="horario-card">
+            <div class="horario-info">
+              <span class="horario-time">${horario}</span>
+              <span class="horario-count"><span id="count-${restaurante}-${horario.replace(':', '')}">0</span> pedidos</span>
+              <span class="horario-status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
+            </div>
+            <div class="horario-actions">
+              <button class="btn btn-ativar" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">
+                <span class="icon">✅</span> Ativar
+              </button>
+              <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
+                <span class="icon">❌</span> Desativar
+              </button>
+            </div>
+          </div>
         `;
         container.appendChild(item);
 
@@ -165,9 +129,12 @@
         const statusRef = db.ref(`horarios/${restaurante}/${horario}`);
         statusRef.on('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
+          const countEl = document.getElementById(`count-${restaurante}-${horario.replace(':', '')}`);
           const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
-          statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
-          statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
+          
+          countEl.textContent = data.contador;
+          statusEl.textContent = data.ativo ? '✅' : '❌';
+          statusEl.className = `horario-status ${data.ativo ? 'ativo' : 'inativo'}`;
         });
 
         // ✅ Botão Ativar
