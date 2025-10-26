@@ -427,7 +427,7 @@ h2, h3, h4 {
 }
 
 .horario-actions {
-  display: flex;
+  /*display: flex;*/
   gap: 5px;
   flex-wrap: wrap;
 }
