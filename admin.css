@@ -42,6 +42,8 @@ body {
 
 h4 {
   text-align: center;
+  font-size: larger;
+  padding: 10px;
 }
 
 .left-column h3 {
