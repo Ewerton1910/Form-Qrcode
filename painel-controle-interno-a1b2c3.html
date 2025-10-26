@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin - Controle</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin-styles.css" />
   
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -24,45 +24,48 @@
 </head>
 <body>
   <div class="container">
-    <h2>⚙️ Painel de Administração</h2>
-    
-    <!-- Status do serviço -->
-    <div class="section">
-      <p><strong>Status:</strong> <span id="status">Carregando...</span></p>
-      <button class="btn-zerar" id="btnAtivar" style="background:#2ecc71;">✅ Ativar Pedidos</button>
-      <button class="btn-zerar" id="btnDesativar" style="background:#e74c3c;margin-top:10px;">❌ Desativar Pedidos</button>
-    </div>
-
-    <!-- Contadores Gerais -->
-    <div class="section">
-      <h3>📊 Contadores Gerais</h3>
-      
-      <div class="contador-geral">
-        🏪 Central - Almoço: <span id="contadorCentralAlmoco">0</span>
-      </div>
-      <div class="contador-geral">
-        🏪 Central - Janta: <span id="contadorCentralJanta">0</span>
-      </div>
-      
-      <div class="contador-geral">
-        🏕️ Campo - Almoço: <span id="contadorCampoAlmoco">0</span>
-      </div>
-      <div class="contador-geral">
-        🏕️ Campo - Janta: <span id="contadorCampoJanta">0</span>
+    <!-- Contadores fixos no canto superior direito (móvel: aparece no topo) -->
+    <div class="right-column-fixed">
+      <div class="contadores-box">
+        <h3>📊 Contadores Gerais</h3>
+        <div class="contador-item">
+          🏪 <strong>Central - Almoço:</strong> <span id="contadorCentralAlmoco">0</span>
+        </div>
+        <div class="contador-item">
+          🏪 <strong>Central - Janta:</strong> <span id="contadorCentralJanta">0</span>
+        </div>
+        <div class="contador-item">
+          🏕️ <strong>Campo - Almoço:</strong> <span id="contadorCampoAlmoco">0</span>
+        </div>
+        <div class="contador-item">
+          🏕️ <strong>Campo - Janta:</strong> <span id="contadorCampoJanta">0</span>
+        </div>
       </div>
     </div>
 
-    <!-- Contadores por Horário -->
-    <div class="section">
-      <h3>🕒 Controles de Horários</h3>
-      
-      <h4>🏪 Central</h4>
-      <div id="horarios-central" class="horarios-container"></div>
-      
-      <h4>🏕️ Campo</h4>
-      <div id="horarios-campo" class="horarios-container"></div>
-      
-      <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
+    <div class="header">
+      <h2>⚙️ Painel de Administração</h2>
+      <div class="status-actions">
+        <div class="status">
+          <span>Status:</span> <span id="status">Carregando...</span>
+        </div>
+        <button class="btn btn-ativar" id="btnAtivar">✅ Ativar Pedidos</button>
+        <button class="btn btn-desativar" id="btnDesativar">❌ Desativar Pedidos</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="left-column">
+        <h3>🕒 Controles de Horários</h3>
+        
+        <h4>🏪 Central</h4>
+        <div id="horarios-central" class="horarios-lista"></div>
+        
+        <h4>🏕️ Campo</h4>
+        <div id="horarios-campo" class="horarios-lista"></div>
+        
+        <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
+      </div>
     </div>
 
     <a href="index.html">← Voltar ao formulário</a>
@@ -72,7 +75,7 @@
     const db = firebase.database();
     const HORARIOS = {
       central: ["12:00", "12:15", "12:30", "12:45", "13:00"],
-      campo: ["12:00", "12:15", "12:30", "12:45", "13:00"]
+      campo: ["13:00", "13:15", "13:30", "13:45", "14:00"]
     };
 
     // Sincroniza status do serviço
@@ -81,7 +84,7 @@
       document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
     });
 
-    // ✅ Sincroniza contadores por restaurante e turno
+    // Sincroniza contadores
     db.ref('contadores/central/almoço').on('value', (snapshot) => {
       document.getElementById('contadorCentralAlmoco').textContent = snapshot.val() || 0;
     });
@@ -95,55 +98,37 @@
       document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
     });
 
-    // ✅ Função para carregar horários com cartões
+    // Carrega horários com botões
     function carregarHorarios(restaurante, containerId) {
       const container = document.getElementById(containerId);
-      container.innerHTML = ''; // Limpa tudo
+      container.innerHTML = '';
 
       HORARIOS[restaurante].forEach(horario => {
         const item = document.createElement('div');
         item.className = 'horario-item';
         item.id = `item-${restaurante}-${horario.replace(':', '')}`;
         
-        // Cria o cartão
         item.innerHTML = `
-          <div class="horario-card">
-            <div class="horario-info">
-              <span class="horario-time">${horario}</span>
-              <span class="horario-count"><span id="count-${restaurante}-${horario.replace(':', '')}">0</span> pedidos</span>
-              <span class="horario-status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
-            </div>
-            <div class="horario-actions">
-              <button class="btn btn-ativar" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">
-                <span class="icon">✅</span> Ativar
-              </button>
-              <button class="btn btn-desativar" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
-                <span class="icon">❌</span> Desativar
-              </button>
-            </div>
+          <div class="horario-info">
+            <span>${horario}</span>
+            <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
           </div>
+          <button class="btn btn-desativar small" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
+            ❌ Desativar
+          </button>
         `;
         container.appendChild(item);
 
-        // ✅ Sincroniza status e contador em tempo real
+        // Sincroniza status
         const statusRef = db.ref(`horarios/${restaurante}/${horario}`);
         statusRef.on('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
-          const countEl = document.getElementById(`count-${restaurante}-${horario.replace(':', '')}`);
           const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
-          
-          countEl.textContent = data.contador;
-          statusEl.textContent = data.ativo ? '✅' : '❌';
-          statusEl.className = `horario-status ${data.ativo ? 'ativo' : 'inativo'}`;
+          statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
+          statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
         });
 
-        // ✅ Botão Ativar
-        document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
-          statusRef.update({ ativo: true });
-          alert(`✅ Horário ${horario} ativado!`);
-        });
-
-        // ✅ Botão Desativar
+        // Botão Desativar
         document.getElementById(`btn-desativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
           statusRef.update({ ativo: false });
           alert(`❌ Horário ${horario} desativado!`);
@@ -151,7 +136,6 @@
       });
     }
 
-    // Carrega horários
     carregarHorarios('central', 'horarios-central');
     carregarHorarios('campo', 'horarios-campo');
 
@@ -165,16 +149,14 @@
       alert('❌ Pedidos desativados!');
     });
 
-    // Zerar TUDO e reativar horários
+    // Zerar tudo
     document.getElementById('btnZerarTudo').addEventListener('click', () => {
       if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
-        // ✅ Zera contadores por restaurante e turno
         db.ref('contadores').set({
           central: { almoço: 0, janta: 0 },
           campo: { almoço: 0, janta: 0 }
         });
         
-        // Zera e reativa horários
         ['central', 'campo'].forEach(rest => {
           const updates = {};
           HORARIOS[rest].forEach(horario => {
