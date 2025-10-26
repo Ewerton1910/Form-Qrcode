@@ -13,14 +13,14 @@ firebase.initializeApp({
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
-// Sincroniza status
+// Sincroniza status do serviço
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
   const btn = document.getElementById('btnEnviar');
   if (btn) {
     btn.classList.toggle('btn-suspenso', !servicoAtivo);
-    btn.textContent = servicoAtivo
-      ? '📤 Enviar Pedido para WhatsApp'
+    btn.textContent = servicoAtivo 
+      ? '📤 Enviar Pedido para WhatsApp' 
       : '❌ Serviço Suspenso';
   }
 });
@@ -69,24 +69,14 @@ function incrementarContadorPorTurno(restaurante, turno) {
   db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
 }
 
-// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO E TEMPO REAL)
-let isUpdating = false; // Protege contra chamadas simultâneas
-
+// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (TEMPO REAL)
 function atualizarCamposPorTurnoERestaurante() {
-  // ✅ Proteção 1: Evita execuções simultâneas
-  if (isUpdating) return;
-  isUpdating = true;
-
   const turno = document.getElementById('turno')?.value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
   const select = document.getElementById('horarioRetirada');
 
-  // ✅ Proteção 2: Limpa tudo antes
-  if (containerHorario) containerHorario.style.display = 'none';
-  if (select) select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
-
-  // ✅ Proteção 3: Remove todos os listeners antigos
+  // ✅ Limpa listeners anteriores
   if (window.firebaseUnsubscribers) {
     window.firebaseUnsubscribers.forEach(unsub => {
       if (typeof unsub === 'function') unsub();
@@ -94,19 +84,13 @@ function atualizarCamposPorTurnoERestaurante() {
     window.firebaseUnsubscribers = [];
   }
 
-  // Só continua se for Almoço e tiver restaurante selecionado
   if (turno === "Almoço" && restauranteSelecionado) {
     const restauranteKey = restauranteSelecionado.toLowerCase();
-    const horarios = HORARIOS_ALMOCO[restauranteKey];
-
-    if (!horarios) {
-      isUpdating = false;
-      return;
-    }
+    const horarios = HORARIOS_ALMOCO[restauranteKey] || [];
 
     // Função interna para carregar horários
     const carregarHorarios = () => {
-      // ✅ Limpa novamente (garantia total)
+      // ✅ Limpa select antes de recarregar
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
       let carregados = 0;
       let opcoesAtivas = [];
@@ -123,9 +107,7 @@ function atualizarCamposPorTurnoERestaurante() {
 
           // Quando todos os horários forem carregados
           if (carregados === horarios.length) {
-            // ✅ Limpa e reconstrói o select
             select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
-
             opcoesAtivas.forEach(opt => {
               const option = document.createElement('option');
               option.value = opt.value;
@@ -138,25 +120,23 @@ function atualizarCamposPorTurnoERestaurante() {
             }
 
             containerHorario.style.display = 'block';
-            isUpdating = false; // Libera para próxima chamada
           }
         });
       });
     };
 
-    // Carrega imediatamente
+    // ✅ Carrega imediatamente
     carregarHorarios();
 
-    // ✅ Adiciona listeners para atualização em tempo real de CADA horário
+    // ✅ Escuta mudanças em tempo real em CADA horário
     horarios.forEach(horario => {
       const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
       window.firebaseUnsubscribers.push(unsubscribe);
     });
   } else {
-    isUpdating = false; // Libera mesmo se não for Almoço
+    containerHorario.style.display = 'none';
   }
 }
-
 
 // Eventos
 document.getElementById('turno')?.addEventListener('change', atualizarCamposPorTurnoERestaurante);
@@ -175,7 +155,7 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   const user = document.getElementById('loginUser')?.value;
   const pass = document.getElementById('loginPass')?.value;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    window.location.href = 'painel-controle-interno-a1b2c3.html?chave=AcessoLiberado123';
+    window.location.href = 'admin.html';
   } else {
     document.getElementById('loginError').style.display = 'block';
     setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
@@ -187,96 +167,91 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// Envio do formulário
-document.getElementById('btnEnviar').addEventListener('click', function (e) {
+// ✅ CLIQUE NO BOTÃO — COM CONTADORES E HORÁRIOS
+document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
-  // ✅ Lê o status ATUAL do Firebase no clique
-  firebase.database().ref('servico/ativo').once('value', (snapshot) => {
-    const servicoAtivo = snapshot.val() !== false;
+  if (!servicoAtivo) {
+    document.getElementById('modalSuspenso').style.display = 'flex';
+    return;
+  }
 
-    if (!servicoAtivo) {
-      document.getElementById('modalSuspenso').style.display = 'flex';
+  // Validação do Dia da Retirada
+  const diaSelecionado = document.getElementById("diaRetirada").value;
+  if (!diaSelecionado) {
+    alert("Selecione o dia da retirada!");
+    return;
+  }
+
+  // Calcula data exata
+  const dataRetirada = calcularProximaData(parseInt(diaSelecionado));
+  const linhaDataExibida = formatarDataExibicao(dataRetirada);
+
+  // Captura demais valores
+  const nomePessoa = document.getElementById("nomePessoa").value;
+  const matricula = document.getElementById("matricula").value;
+  const nomeEmpresa = document.getElementById("nomeEmpresa").value;
+  const turno = document.getElementById("turno").value;
+  const contato = document.getElementById("contato").value.replace(/\D/g, "");
+  const prato = document.getElementById("prato").value;
+  const restauranteInput = document.querySelector('input[name="restaurante"]:checked');
+  if (!restauranteInput) {
+    alert("Selecione um restaurante!");
+    return;
+  }
+  const restaurante = restauranteInput.value;
+
+  // Validação do contato
+  if (!/^\d{2}9\d{8}$/.test(contato)) {
+    alert("Número de WhatsApp inválido!");
+    return;
+  }
+
+  // Horário (só se for Almoço)
+  let linhaHorario = "";
+  let horarioRetirada = "";
+  const horarioContainer = document.getElementById('horarioContainer');
+  if (horarioContainer.style.display !== 'none') {
+    horarioRetirada = document.getElementById("horarioRetirada").value;
+    if (!horarioRetirada) {
+      alert("Selecione o horário da retirada!");
       return;
     }
+    linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
+  }
 
-    // Validação do Dia da Retirada
-    const diaSelecionado = document.getElementById("diaRetirada").value;
-    if (!diaSelecionado) {
-      alert("Selecione o dia da retirada!");
-      return;
-    }
+  // Incrementa contadores
+  const db = firebase.database();
+  
+  // ✅ Contador por restaurante e turno
+  incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
+  
+  // Contador por horário (só no Almoço)
+  if (turno === "Almoço" && horarioRetirada) {
+    const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
+    ref.transaction(current => (current || 0) + 1);
+  }
 
-    // Calcula data exata
-    const dataRetirada = calcularProximaData(parseInt(diaSelecionado));
-    const linhaDataExibida = formatarDataExibicao(dataRetirada);
+  // Monta mensagem
+  const numeroWhatsApp = "5584987443832";
+  const mensagem =
+    `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
+    `\n` +
+    `👤 *Nome:* ${nomePessoa}\n` +
+    `🔢 *Matrícula:* ${matricula}\n` +
+    `📱 *Contato:* ${formatarTelefone(contato)}\n` +
+    `🏢 *Empresa:* ${nomeEmpresa}\n` +
+    `🕓 *Turno:* ${turno}\n` +
+    `📅 *Dia da Retirada:* ${linhaDataExibida}\n` +
+    linhaHorario +
+    `🏪 *Restaurante:* ${restaurante}\n` +
+    `🍲 *Prato Escolhido:* ${prato}\n` +
+    `\n` +
+    `✅ Pedido registrado com sucesso!\n` +
+    `📲 Entraremos em contato se houver alteração.`;
 
-    // Captura demais valores
-    const nomePessoa = document.getElementById("nomePessoa").value;
-    const matricula = document.getElementById("matricula").value;
-    const nomeEmpresa = document.getElementById("nomeEmpresa").value;
-    const turno = document.getElementById("turno").value;
-    const contato = document.getElementById("contato").value.replace(/\D/g, "");
-    const prato = document.getElementById("prato").value;
-    const restauranteInput = document.querySelector('input[name="restaurante"]:checked');
-    if (!restauranteInput) {
-      alert("Selecione um restaurante!");
-      return;
-    }
-    const restaurante = restauranteInput.value;
-
-    // Validação do contato
-    if (!/^\d{2}9\d{8}$/.test(contato)) {
-      alert("Número de WhatsApp inválido!");
-      return;
-    }
-
-    // Horário (só se for Almoço)
-    let linhaHorario = "";
-    let horarioRetirada = "";
-    const horarioContainer = document.getElementById('horarioContainer');
-    if (horarioContainer.style.display !== 'none') {
-      horarioRetirada = document.getElementById("horarioRetirada").value;
-      if (!horarioRetirada) {
-        alert("Selecione o horário da retirada!");
-        return;
-      }
-      linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
-    }
-
-    // Incrementa contadores
-    const db = firebase.database();
-
-    // ✅ Contador por restaurante e turno
-    incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
-
-    // Contador por horário (só no Almoço)
-    if (turno === "Almoço" && horarioRetirada) {
-      const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
-      ref.transaction(current => (current || 0) + 1);
-    }
-
-    // Monta mensagem
-    const numeroWhatsApp = "5584987443832";
-    const mensagem =
-      `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
-      `\n` +
-      `👤 *Nome:* ${nomePessoa}\n` +
-      `🔢 *Matrícula:* ${matricula}\n` +
-      `📱 *Contato:* ${formatarTelefone(contato)}\n` +
-      `🏢 *Empresa:* ${nomeEmpresa}\n` +
-      `🕓 *Turno:* ${turno}\n` +
-      `📅 *Dia da Retirada:* ${linhaDataExibida}\n` +
-      linhaHorario +
-      `🏪 *Restaurante:* ${restaurante}\n` +
-      `🍲 *Prato Escolhido:* ${prato}\n` +
-      `\n` +
-      `✅ Pedido registrado com sucesso!\n` +
-      `📲 Entraremos em contato se houver alteração.`;
-
-    // Envia para WhatsApp
-    window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
-  });
+  // Envia para WhatsApp
+  window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
 });
 
 // Formatação de telefone
