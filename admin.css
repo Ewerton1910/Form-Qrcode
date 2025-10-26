@@ -163,13 +163,14 @@ h4 {
 .horario-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 130px;
 }
 
 .horario-info span:first-child {
   font-weight: bold;
   font-size: 16px;
   color: #333;
+  margin-left: 20px;
 }
 
 .status.ativo {
