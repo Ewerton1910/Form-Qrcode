@@ -153,7 +153,7 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   const user = document.getElementById('loginUser')?.value;
   const pass = document.getElementById('loginPass')?.value;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    window.location.href = 'admin.html';
+    window.location.href = 'painel-controle-interno-a1b2c3.html';
   } else {
     document.getElementById('loginError').style.display = 'block';
     setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
@@ -164,6 +164,17 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
 document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
+
+// ✅ Verifica chave secreta no admin (segurança básica)
+function verificarAcessoAdmin() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const chave = urlParams.get('chave');
+  if (chave !== 'AcessoLiberado123') {
+    alert("Acesso negado!");
+    window.location.href = 'index.html';
+    throw new Error("Acesso negado!");
+  }
+}
 
 // ✅ CLIQUE NO BOTÃO — COM CONTADORES POR RESTAURANTE E TURNO
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
