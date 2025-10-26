@@ -69,44 +69,28 @@ function incrementarContadorPorTurno(restaurante, turno) {
   db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
 }
 
-// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO)
-let isUpdating = false; // Protege contra chamadas simultâneas
-
+// ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (TEMPO REAL)
 function atualizarCamposPorTurnoERestaurante() {
-  // ✅ Proteção 1: Evita execuções simultâneas
-  if (isUpdating) return;
-  isUpdating = true;
-
   const turno = document.getElementById('turno')?.value;
   const restauranteSelecionado = document.querySelector('input[name="restaurante"]:checked')?.value;
   const containerHorario = document.getElementById('horarioContainer');
   const select = document.getElementById('horarioRetirada');
 
-  // ✅ Proteção 2: Limpa tudo antes
-  if (containerHorario) containerHorario.style.display = 'none';
-  if (select) select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
-
-  // ✅ Proteção 3: Remove todos os listeners antigos
+  // ✅ Limpa listeners anteriores
   if (window.firebaseUnsubscribers) {
     window.firebaseUnsubscribers.forEach(unsub => {
       if (typeof unsub === 'function') unsub();
     });
-    window.firebaseUnsubscribers = [];
   }
+  window.firebaseUnsubscribers = [];
 
-  // Só continua se for Almoço e tiver restaurante selecionado
   if (turno === "Almoço" && restauranteSelecionado) {
     const restauranteKey = restauranteSelecionado.toLowerCase();
-    const horarios = HORARIOS_ALMOCO[restauranteKey];
+    const horarios = HORARIOS_ALMOCO[restauranteKey] || [];
 
-    if (!horarios) {
-      isUpdating = false;
-      return;
-    }
-
-    // Função interna para carregar horários
+    // Função para carregar e atualizar horários
     const carregarHorarios = () => {
-      // ✅ Limpa novamente (garantia total)
+      // ✅ Limpa select antes de recarregar
       select.innerHTML = '<option value="" disabled selected>Carregando...</option>';
       let carregados = 0;
       let opcoesAtivas = [];
@@ -116,16 +100,13 @@ function atualizarCamposPorTurnoERestaurante() {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
 
-          // ✅ Só adiciona se estiver ativo
           if (data.ativo) {
             opcoesAtivas.push({ value: horario, text: horario });
           }
 
           // Quando todos os horários forem carregados
           if (carregados === horarios.length) {
-            // ✅ Limpa e reconstrói o select
             select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
-            
             opcoesAtivas.forEach(opt => {
               const option = document.createElement('option');
               option.value = opt.value;
@@ -138,22 +119,21 @@ function atualizarCamposPorTurnoERestaurante() {
             }
 
             containerHorario.style.display = 'block';
-            isUpdating = false; // Libera para próxima chamada
           }
         });
       });
     };
 
-    // Carrega imediatamente
+    // ✅ Carrega imediatamente
     carregarHorarios();
 
-    // ✅ Adiciona listeners para atualização em tempo real
+    // ✅ Escuta mudanças em tempo real em CADA horário
     horarios.forEach(horario => {
       const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
       window.firebaseUnsubscribers.push(unsubscribe);
     });
   } else {
-    isUpdating = false; // Libera mesmo se não for Almoço
+    containerHorario.style.display = 'none';
   }
 }
 
@@ -174,7 +154,8 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   const user = document.getElementById('loginUser')?.value;
   const pass = document.getElementById('loginPass')?.value;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    window.location.href = 'painel-controle-interno-a1b2c3.html';
+    // ✅ Redireciona com chave secreta
+    window.location.href = 'painel-controle-interno-a1b2c3.html?chave=AcessoLiberado123';
   } else {
     document.getElementById('loginError').style.display = 'block';
     setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
@@ -185,6 +166,20 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
 document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
+
+// ✅ Verifica chave secreta no admin (segurança básica)
+function verificarAcessoAdmin() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const chave = urlParams.get('chave');
+  if (chave !== 'AcessoLiberado123') {
+    alert("Acesso negado!");
+    window.location.href = 'index.html';
+    throw new Error("Acesso negado!");
+  }
+}
+
+// Chame esta função no topo do seu admin.html
+// verificarAcessoAdmin();
 
 // Envio do formulário
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
