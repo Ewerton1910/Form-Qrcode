@@ -210,7 +210,13 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     return;
   }
   const restaurante = restauranteInput.value;
-
+  
+ // ✅ Validação do campo "Prato"
+    if (!prato) {
+      alert("Por favor, selecione um prato!");
+      document.getElementById("prato").focus();
+      return;
+    }
   // Validação do contato
   if (!/^\d{2}9\d{8}$/.test(contato)) {
     alert("Número de WhatsApp inválido!");
