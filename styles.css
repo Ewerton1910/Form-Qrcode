@@ -256,6 +256,20 @@ button:active {
   background: #8e44ad;
 }
 
+.horario-item {
+  margin-bottom: 8px; /* ✅ Espaçamento menor entre os cartões */
+}
+
+.horario-card {
+  gap: 8px; /* ✅ Menor gap entre informações e botões */
+}
+
+.horario-actions .btn {
+  padding: 6px 10px; /* ✅ Botões menores dentro do cartão */
+  font-size: 12px; /* ✅ Fonte menor */
+  min-width: auto; /* ✅ Não força largura mínima */
+}
+
 /* MODAL */
 .modal {
   display: none;
