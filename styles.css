@@ -296,7 +296,8 @@ body {
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .header {
@@ -390,19 +391,14 @@ body {
 
 .main-content {
   display: flex;
-  gap: 30px;
+  justify-content: center;
   margin-bottom: 25px;
 }
 
 .left-column {
-  flex: 2;
-}
-
-.right-column {
   flex: 1;
-  position: sticky;
-  top: 20px;
-  height: fit-content;
+  max-width: 600px;
+  width: 100%;
 }
 
 .horarios-lista {
@@ -424,7 +420,7 @@ body {
 
 .horario-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .horario-info {
@@ -439,10 +435,6 @@ body {
   color: #333;
 }
 
-.status {
-  font-weight: bold;
-}
-
 .status.ativo {
   color: #27ae60;
 }
@@ -451,7 +443,8 @@ body {
   color: #e74c3c;
 }
 
-.btn-desativar {
+/* Botão Desativar dentro do item de horário */
+.btn-desativar.small {
   background: #e74c3c;
   color: white;
   padding: 8px 12px;
@@ -460,17 +453,29 @@ body {
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
+  width: auto;
+  margin: 0;
 }
 
-.btn-desativar:hover {
+.btn-desativar.small:hover {
   background: #c0392b;
 }
 
-.contadores-box {
-  background: #f8f9fa;
+/* Contadores fixos no canto superior direito */
+.right-column-fixed {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  z-index: 1000;
+}
+
+.right-column-fixed .contadores-box {
+  background: white;
   padding: 16px;
   border-radius: 12px;
-  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
 }
 
 .contadores-box h3 {
@@ -484,7 +489,7 @@ body {
   align-items: center;
   gap: 5px;
   padding: 10px;
-  background: white;
+  background: #f8f9fa;
   border-radius: 6px;
   margin: 5px 0;
   font-size: 14px;
@@ -509,24 +514,22 @@ a:hover {
 }
 
 /* Responsividade */
-@media (max-width: 768px) {
-  .container {
-    padding: 15px;
-    margin: 10px;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 899px) {
+  .right-column-fixed {
+    position: static;
+    width: 100%;
+    margin-bottom: 20px;
+    max-width: none;
   }
 
   .main-content {
     flex-direction: column;
+    align-items: center;
   }
 
-  .right-column {
-    position: static;
+  .left-column {
     width: 100%;
+    max-width: none;
   }
 
   .horario-item {
@@ -557,13 +560,12 @@ a:hover {
 }
 
 @media (max-width: 480px) {
-  .container {
+  body {
     padding: 10px;
-    margin: 5px;
   }
 
-  .header {
-    padding-bottom: 10px;
+  .container {
+    padding: 15px;
   }
 
   .btn {
