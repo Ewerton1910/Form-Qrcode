@@ -153,7 +153,8 @@ document.getElementById('btnSubmitLogin')?.addEventListener('click', () => {
   const user = document.getElementById('loginUser')?.value;
   const pass = document.getElementById('loginPass')?.value;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    window.location.href = 'painel-controle-interno-a1b2c3.html';
+    // ✅ Redireciona com chave secreta
+    window.location.href = 'painel-controle-interno-a1b2c3.html?chave=AcessoLiberado123';
   } else {
     document.getElementById('loginError').style.display = 'block';
     setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
