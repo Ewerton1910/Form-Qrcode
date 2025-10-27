@@ -247,7 +247,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   }
 
   // Monta mensagem
-  const numeroWhatsApp = "5584987443832";
+  const numeroWhatsApp = "559433272129";
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
