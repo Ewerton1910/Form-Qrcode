@@ -44,7 +44,7 @@
     </div>
 
        <!-- ✅ Controle de Dias da Semana -->
-    <div class="section">
+   <!-- <div class="section">
       <h3>📅 Controle de Dias da Semana</h3>
       
       <div class="dia-item">
@@ -60,7 +60,7 @@
         <button class="btn btn-desativar" id="btnDesativarQuinta">❌ Desativar</button>
         <button class="btn btn-ativar" id="btnAtivarQuinta">✅ Ativar</button>
       </div>
-    </div>
+    </div> -->
 
     <!-- Header com título centralizado e status + botões abaixo -->
     <div class="header">
@@ -132,22 +132,22 @@
     });
 
     // ✅ Botões de ativar/desativar dias
-    document.getElementById('btnAtivarTerca').addEventListener('click', () => {
-      db.ref('dias/terca').set(true);
-      alert('✅ Terça-Feira ativada!');
-    });
-    document.getElementById('btnDesativarTerca').addEventListener('click', () => {
-      db.ref('dias/terca').set(false);
-      alert('❌ Terça-Feira desativada!');
-    });
-    document.getElementById('btnAtivarQuinta').addEventListener('click', () => {
-      db.ref('dias/quinta').set(true);
-      alert('✅ Quinta-Feira ativada!');
-    });
-    document.getElementById('btnDesativarQuinta').addEventListener('click', () => {
-      db.ref('dias/quinta').set(false);
-      alert('❌ Quinta-Feira desativada!');
-    });
+    //document.getElementById('btnAtivarTerca').addEventListener('click', () => {
+     // db.ref('dias/terca').set(true);
+    //  alert('✅ Terça-Feira ativada!');
+    //});
+    //document.getElementById('btnDesativarTerca').addEventListener('click', () => {
+    //  db.ref('dias/terca').set(false);
+     // alert('❌ Terça-Feira desativada!');
+    //});
+    //document.getElementById('btnAtivarQuinta').addEventListener('click', () => {
+     // db.ref('dias/quinta').set(true);
+    //  alert('✅ Quinta-Feira ativada!');
+    //});
+    //document.getElementById('btnDesativarQuinta').addEventListener('click', () => {
+     // db.ref('dias/quinta').set(false);
+    //  alert('❌ Quinta-Feira desativada!');
+   // });
 
 
     // Carrega horários com botões de Ativar/Desativar
