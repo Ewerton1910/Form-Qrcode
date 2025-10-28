@@ -180,6 +180,32 @@
         alert('✅ Todos os contadores foram zerados e horários reativados!');
       }
     });
+
+        // ✅ Controle de Dias da Semana
+    function sincronizarDia(dia, idStatus, idAtivar, idDesativar) {
+      const ref = db.ref(`dias/${dia}`);
+
+      ref.on('value', (snapshot) => {
+        const ativo = snapshot.val() !== false;
+        const statusEl = document.getElementById(idStatus);
+        statusEl.textContent = ativo ? '✅ Ativo' : '❌ Desativado';
+        statusEl.className = `status ${ativo ? 'ativo' : 'inativo'}`;
+      });
+
+      document.getElementById(idAtivar)?.addEventListener('click', () => {
+        ref.set(true);
+        alert(`✅ ${dia}-Feira ativada!`);
+      });
+
+      document.getElementById(idDesativar)?.addEventListener('click', () => {
+        ref.set(false);
+        alert(`❌ ${dia}-Feira desativada!`);
+      });
+    }
+
+    sincronizarDia('terca', 'statusTerca', 'btnAtivarTerca', 'btnDesativarTerca');
+    sincronizarDia('quinta', 'statusQuinta', 'btnAtivarQuinta', 'btnDesativarQuinta');
+    
   </script>
 </body>
 </html>
