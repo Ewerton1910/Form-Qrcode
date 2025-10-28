@@ -306,6 +306,10 @@ a:hover {
   opacity: 0.9;
 }
 
+#controle-dias {
+  margin-top: 20px;
+}
+
 @media (max-width: 480px) {
   .dia-item {
     flex-direction: column;
