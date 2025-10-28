@@ -226,15 +226,22 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   }
 
   // Horário (só se for Almoço)
+  // Horário (só se for Almoço)
   let linhaHorario = "";
   let horarioRetirada = "";
   const horarioContainer = document.getElementById('horarioContainer');
+  
+  // ✅ Só valida se o campo estiver visível (Almoço)
   if (horarioContainer.style.display !== 'none') {
     horarioRetirada = document.getElementById("horarioRetirada").value;
+  
+    // ✅ Obriga a selecionar um horário
     if (!horarioRetirada) {
-      alert("Selecione o horário da retirada!");
+      alert("Por favor, selecione o horário da retirada!");
+      document.getElementById("horarioRetirada").focus();
       return;
     }
+  
     linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
   }
 
