@@ -64,9 +64,11 @@ const HORARIOS_ALMOCO = {
 
 // ✅ Incrementa contador por restaurante e turno
 function incrementarContadorPorTurno(restaurante, turno) {
+  // ✅ NOVO
   const db = firebase.database();
-  const key = turno.toLowerCase(); // "Almoço" → "almoço"
-  db.ref(`contadores/${restaurante}/${key}`).transaction(current => (current || 0) + 1);
+  const restauranteKey = restaurante.toLowerCase();
+  const turnoKey = turno.toLowerCase(); // "Almoço" → "almoço"
+  db.ref(`contadores/${restauranteKey}/${turnoKey}`).transaction(current => (current || 0) + 1);
 }
 
 // ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO)
