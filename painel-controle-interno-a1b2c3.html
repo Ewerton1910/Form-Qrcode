@@ -1,251 +1,303 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - Controle</title>
-  <link rel="stylesheet" href="admin.css" />
-  
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
-      authDomain: "lanchonete-pedidos.firebaseapp.com",
-      databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
-      projectId: "lanchonete-pedidos",
-      storageBucket: "lanchonete-pedidos.firebasestorage.app",
-      messagingSenderId: "558143780233",
-      appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-</head>
-<body>
-  <div class="container">
-    <!-- Contadores fixos no canto superior direito -->
-    <div class="right-column-fixed">
-      <div class="contadores-box">
-        <h3>📊 Contadores Gerais</h3>
-        <div class="contador-item">
-          🏪 <strong>Central - Almoço:</strong> <span id="contadorCentralAlmoco">0</span>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin - Controle</title>
+        <link rel="stylesheet" href="admin.css" />
+
+        <!-- Firebase -->
+        <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+        <script>
+            const firebaseConfig = {
+              apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
+              authDomain: "lanchonete-pedidos.firebaseapp.com",
+              databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
+              projectId: "lanchonete-pedidos",
+              storageBucket: "lanchonete-pedidos.firebasestorage.app",
+              messagingSenderId: "558143780233",
+              appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
+            };
+            firebase.initializeApp(firebaseConfig);
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Contadores fixos no canto superior direito -->
+            <div class="right-column-fixed">
+                <div class="contadores-box">
+                    <h3>📊 Contadores Gerais</h3>
+                    <div class="contador-item">
+                        🏪 <strong>Central - Almoço:</strong>
+                        <span id="contadorCentralAlmoco">0</span>
+                    </div>
+                    <div class="contador-item">
+                        🏪 <strong>Central - Janta:</strong>
+                        <span id="contadorCentralJanta">0</span>
+                    </div>
+                    <div class="contador-item">
+                        🏕️ <strong>Campo - Almoço:</strong>
+                        <span id="contadorCampoAlmoco">0</span>
+                    </div>
+                    <div class="contador-item">
+                        🏕️ <strong>Campo - Janta:</strong>
+                        <span id="contadorCampoJanta">0</span>
+                    </div>
+                </div>
+                <!-- ✅ Controle de Dias da Semana (NOVO) -->
+                <div id="controle-dias" class="contadores-box">
+                    <h3>📅 Controle de Dias da Semana</h3>
+
+                    <div class="dia-item">
+                        <span>Terça-Feira</span>
+                        <span class="status" id="statusTerca"
+                            >Carregando...</span
+                        >
+                        <button
+                            class="btn btn-ativar small"
+                            id="btnAtivarTerca"
+                        >
+                            ✅ Ativar
+                        </button>
+                        <button
+                            class="btn btn-desativar small"
+                            id="btnDesativarTerca"
+                        >
+                            ❌ Desativar
+                        </button>
+                    </div>
+
+                    <div class="dia-item">
+                        <span>Quinta-Feira</span>
+                        <span class="status" id="statusQuinta"
+                            >Carregando...</span
+                        >
+                        <button
+                            class="btn btn-ativar small"
+                            id="btnAtivarQuinta"
+                        >
+                            ✅ Ativar
+                        </button>
+                        <button
+                            class="btn btn-desativar small"
+                            id="btnDesativarQuinta"
+                        >
+                            ❌ Desativar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header com título centralizado e status + botões abaixo -->
+            <div class="header">
+                <h2>⚙️ Painel de Administração</h2>
+                <div class="status-actions">
+                    <div class="status">
+                        <span>Status:</span>
+                        <span id="status">Carregando...</span>
+                    </div>
+                    <button class="btn btn-ativar" id="btnAtivar">
+                        ✅ Ativar Pedidos
+                    </button>
+                    <button class="btn btn-desativar" id="btnDesativar">
+                        ❌ Desativar Pedidos
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="left-column">
+                    <h3>🕒 Controle de Horários de Almoço</h3>
+
+                    <h4>🏪 Central</h4>
+                    <div id="horarios-central" class="horarios-lista"></div>
+
+                    <h4>🏕️ Campo</h4>
+                    <div id="horarios-campo" class="horarios-lista"></div>
+
+                    <button class="btn-zerar" id="btnZerarTudo">
+                        🔄 Zerar Tudo e Reativar Horários
+                    </button>
+                </div>
+            </div>
+
+            <a href="index.html">← Voltar ao formulário</a>
         </div>
-        <div class="contador-item">
-          🏪 <strong>Central - Janta:</strong> <span id="contadorCentralJanta">0</span>
-        </div>
-        <div class="contador-item">
-          🏕️ <strong>Campo - Almoço:</strong> <span id="contadorCampoAlmoco">0</span>
-        </div>
-        <div class="contador-item">
-          🏕️ <strong>Campo - Janta:</strong> <span id="contadorCampoJanta">0</span>
-        </div>
-      </div>
-          <!-- ✅ Controle de Dias da Semana (NOVO) -->
-        <div id="controle-dias" class="contadores-box">
-          <h3>📅 Controle de Dias da Semana</h3>
-          
-          <div class="dia-item">
-            <span>Terça-Feira</span>
-            <span class="status" id="statusTerca">Carregando...</span>
-            <button class="btn btn-ativar small" id="btnAtivarTerca">✅ Ativar</button>
-            <button class="btn btn-desativar small" id="btnDesativarTerca">❌ Desativar</button>
-          </div>
-          
-          <div class="dia-item">
-            <span>Quinta-Feira</span>
-            <span class="status" id="statusQuinta">Carregando...</span>
-            <button class="btn btn-ativar small" id="btnAtivarQuinta">✅ Ativar</button>
-            <button class="btn btn-desativar small" id="btnDesativarQuinta">❌ Desativar</button>
-          </div>
-        </div>
-    </div>
+        <script>
+            const db = firebase.database();
+            const HORARIOS = {
+              central: ["10:30","10:45","11:00","11:15","11:30","11:45","12:00", "12:15", "12:30", "12:45", "13:00","13:15","13:30","13:45","14:00"],
+              campo: ["11:00","11:15","11:30","11:45","12:00", "12:15", "12:30", "12:45", "13:00","13:15","13:30", "13:45", "14:00", "14:15", "14:30","14:45","15:00"]
+            };
 
-  
+            // Sincroniza status do serviço
+            db.ref('servico/ativo').on('value', (snapshot) => {
+              const ativo = snapshot.val() !== false;
+              document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
+            });
 
-    <!-- Header com título centralizado e status + botões abaixo -->
-    <div class="header">
-      <h2>⚙️ Painel de Administração</h2>
-      <div class="status-actions">
-        <div class="status">
-          <span>Status:</span> <span id="status">Carregando...</span>
-        </div>
-        <button class="btn btn-ativar" id="btnAtivar">✅ Ativar Pedidos</button>
-        <button class="btn btn-desativar" id="btnDesativar">❌ Desativar Pedidos</button>
-      </div>
-    </div>
+            // --------------------------------------------------------------------------------------------------
+            // ✅ NOVA LÓGICA DE CONTADORES: Calcula a soma total de pedidos de Almoço
+            function calcularTotalAlmoco(restaurante, idElemento) {
+              const refHorarios = db.ref(`horarios/${restaurante}`);
+              const element = document.getElementById(idElemento);
 
-    <div class="main-content">
-      <div class="left-column">
-        <h3>🕒 Controle de Horários de Almoço</h3>
-        
-        <h4>🏪 Central</h4>
-        <div id="horarios-central" class="horarios-lista"></div>
-        
-        <h4>🏕️ Campo</h4>
-        <div id="horarios-campo" class="horarios-lista"></div>
-        
-        <button class="btn-zerar" id="btnZerarTudo">🔄 Zerar Tudo e Reativar Horários</button>
-      </div>
-    </div>
+              // Escuta o nó pai (ex: 'horarios/central')
+              refHorarios.on('value', (snapshot) => {
+                let totalPedidos = 0;
 
-    <a href="index.html">← Voltar ao formulário</a>
-  </div>
+                // Itera sobre todos os horários e soma o contador
+                snapshot.forEach(childSnapshot => {
+                  const data = childSnapshot.val();
+                  if (data && data.contador) {
+                    totalPedidos += data.contador;
+                  }
+                });
 
-  <script>
-    const db = firebase.database();
-    const HORARIOS = {
-      central: ["10:30","10:45","11:00","11:15","11:30","11:45","12:00", "12:15", "12:30", "12:45", "13:00","13:15","13:30","13:45","14:00"],
-      campo: ["11:00","11:15","11:30","11:45","12:00", "12:15", "12:30", "12:45", "13:00","13:15","13:30", "13:45", "14:00", "14:15", "14:30","14:45","15:00"]
-    };
+                element.textContent = totalPedidos;
+              });
+            }
 
-    // Sincroniza status do serviço
-    db.ref('servico/ativo').on('value', (snapshot) => {
-      const ativo = snapshot.val() !== false;
-      document.getElementById('status').textContent = ativo ? '🟢 Ativo' : '🔴 Desativado';
-    });
+            // Sincroniza Almoço Central e Campo pela SOMA dos horários (CORRIGIDO)
+            calcularTotalAlmoco('central', 'contadorCentralAlmoco');
+            calcularTotalAlmoco('campo', 'contadorCampoAlmoco');
 
-    // Sincroniza contadores
-    db.ref('contadores/central/almoço').on('value', (snapshot) => {
-      document.getElementById('contadorCentralAlmoco').textContent = snapshot.val() || 0;
-    });
-    db.ref('contadores/central/janta').on('value', (snapshot) => {
-      document.getElementById('contadorCentralJanta').textContent = snapshot.val() || 0;
-    });
-    db.ref('contadores/campo/almoço').on('value', (snapshot) => {
-      document.getElementById('contadorCampoAlmoco').textContent = snapshot.val() || 0;
-    });
-    db.ref('contadores/campo/janta').on('value', (snapshot) => {
-      document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
-    });
+            // Mantenha a sincronização da Janta (onde o contador geral é o correto)
+            db.ref('contadores/central/janta').on('value', (snapshot) => {
+              document.getElementById('contadorCentralJanta').textContent = snapshot.val() || 0;
+            });
+            db.ref('contadores/campo/janta').on('value', (snapshot) => {
+              document.getElementById('contadorCampoJanta').textContent = snapshot.val() || 0;
+            });
+            // --------------------------------------------------------------------------------------------------
 
 
-    // ✅ Sincroniza dias da semana
-    db.ref('dias/terca').on('value', (snapshot) => {
-      const ativo = snapshot.val() !== false;
-      document.getElementById('statusTerca').textContent = ativo ? '✅ Ativo' : '❌ Desativado';
-      document.getElementById('statusTerca').className = `status ${ativo ? 'ativo' : 'inativo'}`;
-    });
-    db.ref('dias/quinta').on('value', (snapshot) => {
-      const ativo = snapshot.val() !== false;
-      document.getElementById('statusQuinta').textContent = ativo ? '✅ Ativo' : '❌ Desativado';
-      document.getElementById('statusQuinta').className = `status ${ativo ? 'ativo' : 'inativo'}`;
-    });
+            // ✅ Sincroniza dias da semana
+            db.ref('dias/terca').on('value', (snapshot) => {
+              const ativo = snapshot.val() !== false;
+              document.getElementById('statusTerca').textContent = ativo ? '✅ Ativo' : '❌ Desativado';
+              document.getElementById('statusTerca').className = `status ${ativo ? 'ativo' : 'inativo'}`;
+            });
+            db.ref('dias/quinta').on('value', (snapshot) => {
+              const ativo = snapshot.val() !== false;
+              document.getElementById('statusQuinta').textContent = ativo ? '✅ Ativo' : '❌ Desativado';
+              document.getElementById('statusQuinta').className = `status ${ativo ? 'ativo' : 'inativo'}`;
+            });
 
-      
-      // ✅ Controle de Dias da Semana (NOVO)
-      function sincronizarDia(dia, idStatus, idAtivar, idDesativar) {
-        const ref = firebase.database().ref(`dias/${dia}`);
-    
-        // Sincroniza status
-        ref.on('value', (snapshot) => {
-          const ativo = snapshot.val() !== false;
-          const statusEl = document.getElementById(idStatus);
-          statusEl.textContent = ativo ? '✅ Ativo' : '❌ Desativado';
-          statusEl.className = `status ${ativo ? 'ativo' : 'inativo'}`;
-        });
-    
-        // Botão Ativar
-        document.getElementById(idAtivar)?.addEventListener('click', () => {
-          ref.set(true);
-          alert(`✅ ${dia}-Feira ativada!`);
-        });
-    
-        // Botão Desativar
-        document.getElementById(idDesativar)?.addEventListener('click', () => {
-          ref.set(false);
-          alert(`❌ ${dia}-Feira desativada!`);
-        });
-      }
-    
-      // Sincroniza Terça e Quinta
-      sincronizarDia('terca', 'statusTerca', 'btnAtivarTerca', 'btnDesativarTerca');
-      sincronizarDia('quinta', 'statusQuinta', 'btnAtivarQuinta', 'btnDesativarQuinta');
+
+            // ✅ Controle de Dias da Semana (NOVO)
+            function sincronizarDia(dia, idStatus, idAtivar, idDesativar) {
+              const ref = firebase.database().ref(`dias/${dia}`);
+
+              // Sincroniza status
+              ref.on('value', (snapshot) => {
+                const ativo = snapshot.val() !== false;
+                const statusEl = document.getElementById(idStatus);
+                statusEl.textContent = ativo ? '✅ Ativo' : '❌ Desativado';
+                statusEl.className = `status ${ativo ? 'ativo' : 'inativo'}`;
+              });
+
+              // Botão Ativar
+              document.getElementById(idAtivar)?.addEventListener('click', () => {
+                ref.set(true);
+                alert(`✅ ${dia}-Feira ativada!`);
+              });
+
+              // Botão Desativar
+              document.getElementById(idDesativar)?.addEventListener('click', () => {
+                ref.set(false);
+                alert(`❌ ${dia}-Feira desativada!`);
+              });
+            }
+
+            // Sincroniza Terça e Quinta
+            sincronizarDia('terca', 'statusTerca', 'btnAtivarTerca', 'btnDesativarTerca');
+            sincronizarDia('quinta', 'statusQuinta', 'btnAtivarQuinta', 'btnDesativarQuinta');
 
 
 
-    // Carrega horários com botões de Ativar/Desativar
-    function carregarHorarios(restaurante, containerId) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
+            // Carrega horários com botões de Ativar/Desativar
+            function carregarHorarios(restaurante, containerId) {
+              const container = document.getElementById(containerId);
+              container.innerHTML = '';
 
-      HORARIOS[restaurante].forEach(horario => {
-        const item = document.createElement('div');
-        item.className = 'horario-item';
-        item.id = `item-${restaurante}-${horario.replace(':', '')}`;
-        
-        item.innerHTML = `
-          <div class="horario-info">
-            <span>${horario}</span>
-            <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
-          </div>
-          <div class="horario-actions">
-            <button class="btn btn-ativar small" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">
-              ✅ Ativar
-            </button>
-            <button class="btn btn-desativar small" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
-              ❌ Desativar
-            </button>
-          </div>
-        `;
-        container.appendChild(item);
+              HORARIOS[restaurante].forEach(horario => {
+                const item = document.createElement('div');
+                item.className = 'horario-item';
+                item.id = `item-${restaurante}-${horario.replace(':', '')}`;
 
-        // Sincroniza status
-        const statusRef = db.ref(`horarios/${restaurante}/${horario}`);
-        statusRef.on('value', (snapshot) => {
-          const data = snapshot.val() || { ativo: true, contador: 0 };
-          const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
-          statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
-          statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
-        });
+                item.innerHTML = `
+                  <div class="horario-info">
+                    <span>${horario}</span>
+                    <span class="status" id="status-${restaurante}-${horario.replace(':', '')}">Carregando...</span>
+                  </div>
+                  <div class="horario-actions">
+                    <button class="btn btn-ativar small" id="btn-ativar-${restaurante}-${horario.replace(':', '')}">
+                      ✅ Ativar
+                    </button>
+                    <button class="btn btn-desativar small" id="btn-desativar-${restaurante}-${horario.replace(':', '')}">
+                      ❌ Desativar
+                    </button>
+                  </div>
+                `;
+                container.appendChild(item);
 
-        // Botão Ativar
-        document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
-          statusRef.update({ ativo: true });
-          alert(`✅ Horário ${horario} ativado!`);
-        });
+                // Sincroniza status e contadores de horário
+                const statusRef = db.ref(`horarios/${restaurante}/${horario}`);
+                statusRef.on('value', (snapshot) => {
+                  const data = snapshot.val() || { ativo: true, contador: 0 };
+                  const statusEl = document.getElementById(`status-${restaurante}-${horario.replace(':', '')}`);
+                  statusEl.textContent = `${data.contador} pedidos ${data.ativo ? '✅' : '❌'}`;
+                  statusEl.className = `status ${data.ativo ? 'ativo' : 'inativo'}`;
+                });
 
-        // Botão Desativar
-        document.getElementById(`btn-desativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
-          statusRef.update({ ativo: false });
-          alert(`❌ Horário ${horario} desativado!`);
-        });
-      });
-    }
+                // Botão Ativar
+                document.getElementById(`btn-ativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
+                  statusRef.update({ ativo: true });
+                  alert(`✅ Horário ${horario} ativado!`);
+                });
 
-    carregarHorarios('central', 'horarios-central');
-    carregarHorarios('campo', 'horarios-campo');
+                // Botão Desativar
+                document.getElementById(`btn-desativar-${restaurante}-${horario.replace(':', '')}`).addEventListener('click', () => {
+                  statusRef.update({ ativo: false });
+                  alert(`❌ Horário ${horario} desativado!`);
+                });
+              });
+            }
 
-    // Ativar/Desativar serviço geral
-    document.getElementById('btnAtivar').addEventListener('click', () => {
-      db.ref('servico/ativo').set(true);
-      alert('✅ Pedidos ativados!');
-    });
-    document.getElementById('btnDesativar').addEventListener('click', () => {
-      db.ref('servico/ativo').set(false);
-      alert('❌ Pedidos desativados!');
-    });
+            carregarHorarios('central', 'horarios-central');
+            carregarHorarios('campo', 'horarios-campo');
 
-    // Zerar tudo e reativar horários
-    document.getElementById('btnZerarTudo').addEventListener('click', () => {
-      if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
-        db.ref('contadores').set({
-          central: { almoço: 0, janta: 0 },
-          campo: { almoço: 0, janta: 0 }
-        });
-        
-        ['central', 'campo'].forEach(rest => {
-          const updates = {};
-          HORARIOS[rest].forEach(horario => {
-            updates[`horarios/${rest}/${horario}`] = { ativo: true, contador: 0 };
-          });
-          db.ref().update(updates);
-        });
-        
-        alert('✅ Todos os contadores foram zerados e horários reativados!');
-      }
-    });
+            // Ativar/Desativar serviço geral
+            document.getElementById('btnAtivar').addEventListener('click', () => {
+              db.ref('servico/ativo').set(true);
+              alert('✅ Pedidos ativados!');
+            });
+            document.getElementById('btnDesativar').addEventListener('click', () => {
+              db.ref('servico/ativo').set(false);
+              alert('❌ Pedidos desativados!');
+            });
 
-  </script>
-</body>
+            // Zerar tudo e reativar horários
+            document.getElementById('btnZerarTudo').addEventListener('click', () => {
+              if (confirm('Zerar TODOS os contadores e reativar todos os horários?')) {
+                db.ref('contadores').set({
+                  central: { almoço: 0, janta: 0 },
+                  campo: { almoço: 0, janta: 0 }
+                });
+
+                ['central', 'campo'].forEach(rest => {
+                  const updates = {};
+                  HORARIOS[rest].forEach(horario => {
+                    updates[`horarios/${rest}/${horario}`] = { ativo: true, contador: 0 };
+                  });
+                  db.ref().update(updates);
+                });
+
+                alert('✅ Todos os contadores foram zerados e horários reativados!');
+              }
+            });
+        </script>
+    </body>
 </html>
