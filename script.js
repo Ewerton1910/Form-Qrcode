@@ -2,11 +2,11 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
-// Inicializa Firebase (sem espaços extras!)
+// Inicializa Firebase
 firebase.initializeApp({
   apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
   authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com", // ✅ SEM ESPAÇO
+  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
   messagingSenderId: "558143780233",
@@ -19,8 +19,8 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   const btn = document.getElementById('btnEnviar');
   if (btn) {
     btn.classList.toggle('btn-suspenso', !servicoAtivo);
-    btn.textContent = servicoAtivo 
-      ? '📤 Enviar Pedido para WhatsApp' 
+    btn.textContent = servicoAtivo
+      ? '📤 Enviar Pedido para WhatsApp'
       : '❌ Serviço Suspenso';
   }
 });
@@ -42,32 +42,32 @@ firebase.database().ref('dias/quinta').on('value', (snapshot) => {
 });
 
 // Atualiza opções de dias no select
-  function atualizarOpcoesDias() {
-    const select = document.getElementById('diaRetirada');
-    if (!select) return;
-  
-    // Limpa opções
-    select.innerHTML = '<option value="" disabled selected>Escolha o dia</option>';
-  
-    // Adiciona dias ativos
-    if (diasAtivos.terca) {
-      const option = document.createElement('option');
-      option.value = "2";
-      option.textContent = "Terça-Feira";
-      select.appendChild(option);
-    }
-    if (diasAtivos.quinta) {
-      const option = document.createElement('option');
-      option.value = "4";
-      option.textContent = "Quinta-Feira";
-      select.appendChild(option);
-    }
-  
-    // Se nenhum dia estiver ativo
-    if (!diasAtivos.terca && !diasAtivos.quinta) {
-      select.innerHTML = '<option value="" disabled selected>Nenhum dia disponível</option>';
-    }
+function atualizarOpcoesDias() {
+  const select = document.getElementById('diaRetirada');
+  if (!select) return;
+
+  // Limpa opções
+  select.innerHTML = '<option value="" disabled selected>Escolha o dia</option>';
+
+  // Adiciona dias ativos
+  if (diasAtivos.terca) {
+    const option = document.createElement('option');
+    option.value = "2";
+    option.textContent = "Terça-Feira";
+    select.appendChild(option);
   }
+  if (diasAtivos.quinta) {
+    const option = document.createElement('option');
+    option.value = "4";
+    option.textContent = "Quinta-Feira";
+    select.appendChild(option);
+  }
+
+  // Se nenhum dia estiver ativo
+  if (!diasAtivos.terca && !diasAtivos.quinta) {
+    select.innerHTML = '<option value="" disabled selected>Nenhum dia disponível</option>';
+  }
+}
 
 // Calcula próxima data de Terça (2) ou Quinta (4)
 function calcularProximaData(diaSemana) {
@@ -106,12 +106,11 @@ const HORARIOS_ALMOCO = {
   campo: ["11:00","11:15","11:30","11:45","12:00", "12:15", "12:30", "12:45", "13:00","13:15","13:30", "13:45", "14:00", "14:15", "14:30","14:45","15:00"]
 };
 
-// ✅ Incrementa contador por restaurante e turno
+// ✅ Incrementa contador por restaurante e turno (AGORA USADO APENAS PARA JANTA)
 function incrementarContadorPorTurno(restaurante, turno) {
-  // ✅ NOVO
   const db = firebase.database();
   const restauranteKey = restaurante.toLowerCase();
-  const turnoKey = turno.toLowerCase(); // "Almoço" → "almoço"
+  const turnoKey = turno.toLowerCase();
   db.ref(`contadores/${restauranteKey}/${turnoKey}`).transaction(current => (current || 0) + 1);
 }
 
@@ -141,6 +140,7 @@ function atualizarCamposPorTurnoERestaurante() {
       let opcoesAtivas = [];
 
       horarios.forEach(horario => {
+        // Usamos 'once' aqui para carregar as opções ativas e o status inicial
         firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
@@ -172,7 +172,7 @@ function atualizarCamposPorTurnoERestaurante() {
     // ✅ Carrega imediatamente
     carregarHorarios();
 
-    // ✅ Escuta mudanças em tempo real em CADA horário
+    // ✅ Escuta mudanças em tempo real em CADA horário para recarregar o select
     horarios.forEach(horario => {
       const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
       window.firebaseUnsubscribers.push(unsubscribe);
@@ -212,7 +212,7 @@ document.getElementById('btnFecharSuspenso')?.addEventListener('click', () => {
   document.getElementById('modalSuspenso').style.display = 'none';
 });
 
-// ✅ Verifica chave secreta no admin (segurança básica)
+// ✅ Verifica chave secreta no admin (segurança básica) - Funçao não utilizada no index.js
 function verificarAcessoAdmin() {
   const urlParams = new URLSearchParams(window.location.search);
   const chave = urlParams.get('chave');
@@ -223,7 +223,7 @@ function verificarAcessoAdmin() {
   }
 }
 
-// ✅ CLIQUE NO BOTÃO — COM CONTADORES POR RESTAURANTE E TURNO
+// ✅ CLIQUE NO BOTÃO — COM CONTADORES CORRIGIDOS
 document.getElementById('btnEnviar').addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -257,12 +257,12 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   }
   const restaurante = restauranteInput.value;
   
- // ✅ Validação do campo "Prato"
-    if (!prato) {
-      alert("Por favor, selecione um prato!");
-      document.getElementById("prato").focus();
-      return;
-    }
+  // ✅ Validação do campo "Prato"
+  if (!prato) {
+    alert("Por favor, selecione um prato!");
+    document.getElementById("prato").focus();
+    return;
+  }
   // Validação do contato
   if (!/^\d{2}9\d{8}$/.test(contato)) {
     alert("Número de WhatsApp inválido!");
@@ -270,34 +270,41 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   }
 
   // Horário (só se for Almoço)
-  // Horário (só se for Almoço)
   let linhaHorario = "";
   let horarioRetirada = "";
   const horarioContainer = document.getElementById('horarioContainer');
   
   // ✅ Só valida se o campo estiver visível (Almoço)
-  if (horarioContainer.style.display !== 'none') {
+  if (horarioContainer.style.display !== 'none' && turno === "Almoço") {
     horarioRetirada = document.getElementById("horarioRetirada").value;
-  
+    
     // ✅ Obriga a selecionar um horário
     if (!horarioRetirada) {
       alert("Por favor, selecione o horário da retirada!");
       document.getElementById("horarioRetirada").focus();
       return;
     }
-  
+    
     linhaHorario = `🕒 *Horário da Retirada:* ${horarioRetirada}\n`;
   }
 
-  // ✅ Incrementa contadores por restaurante e turno
-  incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
-
-  // Contador por horário (só no Almoço)
+  // 🛑 LÓGICA DE CONTADORES CORRIGIDA (EVITA DUPLICAÇÃO)
   if (turno === "Almoço" && horarioRetirada) {
+    // Se for Almoço, incrementa APENAS o contador por HORÁRIO.
     const db = firebase.database();
     const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
     ref.transaction(current => (current || 0) + 1);
+    
+  } else if (turno === "Janta") {
+    // Se for Janta, incrementa o contador GERAL.
+    incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
+    
+  } else if (turno === "Almoço" && horarioContainer.style.display !== 'none' && !horarioRetirada) {
+      // Caso de segurança para Almoço sem horário selecionado
+      alert("Erro interno na seleção de horário. Por favor, tente novamente.");
+      return;
   }
+  // 🛑 FIM DA LÓGICA DE CONTADORES CORRIGIDA
 
   // Monta mensagem
   const numeroWhatsApp = "559433272129";
