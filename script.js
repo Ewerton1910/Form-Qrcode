@@ -9,7 +9,7 @@ firebase.initializeApp({
   databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
-  messagingSenderId: "558143780233",
+  messagingSenderId: "5584987443832",
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
