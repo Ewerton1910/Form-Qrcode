@@ -335,7 +335,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   // 🛑 FIM DA LÓGICA DE CONTADORES CORRIGIDA
 
   // Monta mensagem
-  const numeroWhatsApp = "558143780233";
+  const numeroWhatsApp = "558143780233"; 
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
@@ -352,9 +352,14 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // ✅ Corrigido: removido espaço extra
-  window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
-  alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
+  // Lógica de envio mais robusta (usando api.whatsapp.com que é mais compatível)
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensagem)}`;
+  
+  // Tenta abrir em nova aba, se falhar (bloqueador de popup), abre na mesma
+  const win = window.open(whatsappUrl, '_blank');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = whatsappUrl;
+  }
 });
 
 // Formatação de telefone
