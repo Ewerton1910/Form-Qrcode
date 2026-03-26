@@ -50,41 +50,38 @@
                     <h3>📅 Controle de Dias</h3>
 
                     <div class="dia-item">
+                        <span>Segunda-Feira</span>
+                        <span class="status" id="statusSegunda">Carregando...</span>
+                        <button class="btn btn-ativar small" id="btnAtivarSegunda">✅ Ativar</button>
+                        <button class="btn btn-desativar small" id="btnDesativarSegunda">❌ Desativar</button>
+                    </div>
+
+                    <div class="dia-item">
                         <span>Terça-Feira</span>
-                        <span class="status" id="statusTerca"
-                            >Carregando...</span
-                        >
-                        <button
-                            class="btn btn-ativar small"
-                            id="btnAtivarTerca"
-                        >
-                            ✅ Ativar
-                        </button>
-                        <button
-                            class="btn btn-desativar small"
-                            id="btnDesativarTerca"
-                        >
-                            ❌ Desativar
-                        </button>
+                        <span class="status" id="statusTerca">Carregando...</span>
+                        <button class="btn btn-ativar small" id="btnAtivarTerca">✅ Ativar</button>
+                        <button class="btn btn-desativar small" id="btnDesativarTerca">❌ Desativar</button>
+                    </div>
+
+                    <div class="dia-item">
+                        <span>Quarta-Feira</span>
+                        <span class="status" id="statusQuarta">Carregando...</span>
+                        <button class="btn btn-ativar small" id="btnAtivarQuarta">✅ Ativar</button>
+                        <button class="btn btn-desativar small" id="btnDesativarQuarta">❌ Desativar</button>
                     </div>
 
                     <div class="dia-item">
                         <span>Quinta-Feira</span>
-                        <span class="status" id="statusQuinta"
-                            >Carregando...</span
-                        >
-                        <button
-                            class="btn btn-ativar small"
-                            id="btnAtivarQuinta"
-                        >
-                            ✅ Ativar
-                        </button>
-                        <button
-                            class="btn btn-desativar small"
-                            id="btnDesativarQuinta"
-                        >
-                            ❌ Desativar
-                        </button>
+                        <span class="status" id="statusQuinta">Carregando...</span>
+                        <button class="btn btn-ativar small" id="btnAtivarQuinta">✅ Ativar</button>
+                        <button class="btn btn-desativar small" id="btnDesativarQuinta">❌ Desativar</button>
+                    </div>
+
+                    <div class="dia-item">
+                        <span>Sexta-Feira</span>
+                        <span class="status" id="statusSexta">Carregando...</span>
+                        <button class="btn btn-ativar small" id="btnAtivarSexta">✅ Ativar</button>
+                        <button class="btn btn-desativar small" id="btnDesativarSexta">❌ Desativar</button>
                     </div>
                 </div>
             </div>
@@ -173,19 +170,6 @@
             // --------------------------------------------------------------------------------------------------
 
 
-            // ✅ Sincroniza dias da semana
-            db.ref('dias/terca').on('value', (snapshot) => {
-              const ativo = snapshot.val() !== false;
-              document.getElementById('statusTerca').textContent = ativo ? '✅ Ativo' : '❌ Desativado';
-              document.getElementById('statusTerca').className = `status ${ativo ? 'ativo' : 'inativo'}`;
-            });
-            db.ref('dias/quinta').on('value', (snapshot) => {
-              const ativo = snapshot.val() !== false;
-              document.getElementById('statusQuinta').textContent = ativo ? '✅ Ativo' : '❌ Desativado';
-              document.getElementById('statusQuinta').className = `status ${ativo ? 'ativo' : 'inativo'}`;
-            });
-
-
             // ✅ Controle de Dias da Semana (NOVO)
             function sincronizarDia(dia, idStatus, idAtivar, idDesativar) {
               const ref = firebase.database().ref(`dias/${dia}`);
@@ -194,26 +178,31 @@
               ref.on('value', (snapshot) => {
                 const ativo = snapshot.val() !== false;
                 const statusEl = document.getElementById(idStatus);
-                statusEl.textContent = ativo ? '✅ Ativo' : '❌ Desativado';
-                statusEl.className = `status ${ativo ? 'ativo' : 'inativo'}`;
+                if (statusEl) {
+                    statusEl.textContent = ativo ? '✅ Ativo' : '❌ Desativado';
+                    statusEl.className = `status ${ativo ? 'ativo' : 'inativo'}`;
+                }
               });
 
               // Botão Ativar
               document.getElementById(idAtivar)?.addEventListener('click', () => {
                 ref.set(true);
-                alert(`✅ ${dia}-Feira ativada!`);
+                alert(`✅ ${dia.charAt(0).toUpperCase() + dia.slice(1)}-Feira ativada!`);
               });
 
               // Botão Desativar
               document.getElementById(idDesativar)?.addEventListener('click', () => {
                 ref.set(false);
-                alert(`❌ ${dia}-Feira desativada!`);
+                alert(`❌ ${dia.charAt(0).toUpperCase() + dia.slice(1)}-Feira desativada!`);
               });
             }
 
-            // Sincroniza Terça e Quinta
+            // Sincroniza todos os dias
+            sincronizarDia('segunda', 'statusSegunda', 'btnAtivarSegunda', 'btnDesativarSegunda');
             sincronizarDia('terca', 'statusTerca', 'btnAtivarTerca', 'btnDesativarTerca');
+            sincronizarDia('quarta', 'statusQuarta', 'btnAtivarQuarta', 'btnDesativarQuarta');
             sincronizarDia('quinta', 'statusQuinta', 'btnAtivarQuinta', 'btnDesativarQuinta');
+            sincronizarDia('sexta', 'statusSexta', 'btnAtivarSexta', 'btnDesativarSexta');
 
 
 
