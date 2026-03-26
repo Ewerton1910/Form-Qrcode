@@ -27,17 +27,40 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
 
 // ✅ Sincroniza dias da semana
 let diasAtivos = {
+  segunda: true,
   terca: true,
-  quinta: true
+  quarta: true,
+  quinta: true,
+  sexta: true
 };
 
+firebase.database().ref('dias/segunda').on('value', (snapshot) => {
+  const val = snapshot.val();
+  diasAtivos.segunda = (val === null) ? true : (val !== false);
+  atualizarOpcoesDias();
+});
+
 firebase.database().ref('dias/terca').on('value', (snapshot) => {
-  diasAtivos.terca = snapshot.val() !== false;
+  const val = snapshot.val();
+  diasAtivos.terca = (val === null) ? true : (val !== false);
+  atualizarOpcoesDias();
+});
+
+firebase.database().ref('dias/quarta').on('value', (snapshot) => {
+  const val = snapshot.val();
+  diasAtivos.quarta = (val === null) ? true : (val !== false);
   atualizarOpcoesDias();
 });
 
 firebase.database().ref('dias/quinta').on('value', (snapshot) => {
-  diasAtivos.quinta = snapshot.val() !== false;
+  const val = snapshot.val();
+  diasAtivos.quinta = (val === null) ? true : (val !== false);
+  atualizarOpcoesDias();
+});
+
+firebase.database().ref('dias/sexta').on('value', (snapshot) => {
+  const val = snapshot.val();
+  diasAtivos.sexta = (val === null) ? true : (val !== false);
   atualizarOpcoesDias();
 });
 
@@ -50,39 +73,44 @@ function atualizarOpcoesDias() {
   select.innerHTML = '<option value="" disabled selected>Escolha o dia</option>';
 
   // Adiciona dias ativos
-  if (diasAtivos.terca) {
-    const option = document.createElement('option');
-    option.value = "2";
-    option.textContent = "Terça-Feira";
-    select.appendChild(option);
-  }
-  if (diasAtivos.quinta) {
-    const option = document.createElement('option');
-    option.value = "4";
-    option.textContent = "Quinta-Feira";
-    select.appendChild(option);
-  }
+  const diasConfig = [
+    { key: 'segunda', value: '1', label: 'Segunda-Feira' },
+    { key: 'terca', value: '2', label: 'Terça-Feira' },
+    { key: 'quarta', value: '3', label: 'Quarta-Feira' },
+    { key: 'quinta', value: '4', label: 'Quinta-Feira' },
+    { key: 'sexta', value: '5', label: 'Sexta-Feira' }
+  ];
+
+  let algumAtivo = false;
+  diasConfig.forEach(dia => {
+    if (diasAtivos[dia.key]) {
+      const option = document.createElement('option');
+      option.value = dia.value;
+      option.textContent = dia.label;
+      select.appendChild(option);
+      algumAtivo = true;
+    }
+  });
 
   // Se nenhum dia estiver ativo
-  if (!diasAtivos.terca && !diasAtivos.quinta) {
+  if (!algumAtivo) {
     select.innerHTML = '<option value="" disabled selected>Nenhum dia disponível</option>';
   }
 }
 
-// Calcula próxima data de Terça (2) ou Quinta (4)
+// Calcula próxima data de Segunda (1) a Sexta (5)
 function calcularProximaData(diaSemana) {
   const hoje = new Date();
   const diaAtual = hoje.getDay();
   let diasParaAdicionar = 0;
 
-  if (diaSemana === 2) { // Terça
-    if (diaAtual < 2) diasParaAdicionar = 2 - diaAtual;
-    else if (diaAtual === 2) diasParaAdicionar = 7;
-    else diasParaAdicionar = 9 - diaAtual;
-  } else if (diaSemana === 4) { // Quinta
-    if (diaAtual < 4) diasParaAdicionar = 4 - diaAtual;
-    else if (diaAtual === 4) diasParaAdicionar = 7;
-    else diasParaAdicionar = 11 - diaAtual;
+  // Lógica universal para qualquer dia da semana
+  if (diaAtual < diaSemana) {
+    diasParaAdicionar = diaSemana - diaAtual;
+  } else if (diaAtual === diaSemana) {
+    diasParaAdicionar = 7; // Próxima semana
+  } else {
+    diasParaAdicionar = (7 - diaAtual) + diaSemana;
   }
 
   const data = new Date();
