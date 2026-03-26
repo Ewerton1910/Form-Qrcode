@@ -2,17 +2,6 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = atob("bDRuY2gwbjN0My0yMDI1IQ==");
 let servicoAtivo = true;
 
-// Inicializa Firebase
-firebase.initializeApp({
-  apiKey: "AIzaSyAE4cDYIovbsK61qug_wgDUdlbrR5lpvGM",
-  authDomain: "lanchonete-pedidos.firebaseapp.com",
-  databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
-  projectId: "lanchonete-pedidos",
-  storageBucket: "lanchonete-pedidos.firebasestorage.app",
-  messagingSenderId: "5584987443832",
-  appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
-});
-
 // Sincroniza status
 firebase.database().ref('servico/ativo').on('value', (snapshot) => {
   servicoAtivo = snapshot.val() !== false;
