@@ -326,7 +326,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
       document.getElementById('modalSucesso').style.display = 'flex';
       
       // Monta mensagem e redireciona
-      const numeroWhatsApp = "5584987443832"; 
+      const numeroWhatsApp = "55"; 
       const agora = new Date();
       const carimboPedido = agora.toLocaleString('pt-BR');
       
