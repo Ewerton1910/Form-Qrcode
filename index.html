@@ -226,6 +226,26 @@
     </div>
   </div>
 
+  <!-- Modal de Sucesso -->
+  <div id="modalSucesso" class="modal">
+    <div class="modal-content">
+      <h2 style="color: #25d366;">✅ Pedido Enviado!</h2>
+      <p>Seu pedido foi processado e você está sendo redirecionado para o WhatsApp.</p>
+      <button onclick="document.getElementById('modalSucesso').style.display='none'" style="background: #25d366;">OK</button>
+    </div>
+  </div>
+
+  <!-- Modal de Erro -->
+  <div id="modalErro" class="modal">
+    <div class="modal-content">
+      <h2 style="color: #e74c3c;">❌ Ops! Algo deu errado</h2>
+      <p>Não conseguimos registrar seu pedido automaticamente.</p>
+      <p><strong>Por favor, entre em contato diretamente:</strong></p>
+      <p style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">(81) 4378-0233</p>
+      <button onclick="document.getElementById('modalErro').style.display='none'" style="background: #e74c3c;">Fechar</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
