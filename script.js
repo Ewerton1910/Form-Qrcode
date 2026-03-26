@@ -327,6 +327,9 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
       
       // Monta mensagem e redireciona
       const numeroWhatsApp = "5584987443832"; 
+      const agora = new Date();
+      const carimboPedido = agora.toLocaleString('pt-BR');
+      
       const mensagem =
         `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
         `\n` +
@@ -340,6 +343,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
         `🏪 *Restaurante:* ${restaurante}\n` +
         `🍲 *Prato Escolhido:* ${prato}\n` +
         `\n` +
+        `🕒 *Pedido gerado em:* ${carimboPedido}\n` +
         `✅ Pedido registrado com sucesso!\n` +
         `📲 Entraremos em contato se houver alteração.`;
 
