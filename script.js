@@ -132,13 +132,13 @@ function atualizarCamposPorTurnoERestaurante() {
   const containerHorario = document.getElementById('horarioContainer');
   const select = document.getElementById('horarioRetirada');
 
-  // ✅ Limpa listeners anteriores
-  if (window.firebaseUnsubscribers) {
-    window.firebaseUnsubscribers.forEach(unsub => {
-      if (typeof unsub === 'function') unsub();
+  // ✅ Limpa listeners anteriores corretamente
+  if (window.firebaseListeners) {
+    window.firebaseListeners.forEach(item => {
+      item.ref.off('value', item.callback);
     });
   }
-  window.firebaseUnsubscribers = [];
+  window.firebaseListeners = [];
 
   if (turno === "Almoço" && restauranteSelecionado) {
     const restauranteKey = restauranteSelecionado.toLowerCase();
@@ -151,7 +151,6 @@ function atualizarCamposPorTurnoERestaurante() {
       let opcoesAtivas = [];
 
       horarios.forEach(horario => {
-        // Usamos 'once' aqui para carregar as opções ativas e o status inicial
         firebase.database().ref(`horarios/${restauranteKey}/${horario}`).once('value', (snapshot) => {
           const data = snapshot.val() || { ativo: true, contador: 0 };
           carregados++;
@@ -160,7 +159,6 @@ function atualizarCamposPorTurnoERestaurante() {
             opcoesAtivas.push({ value: horario, text: horario });
           }
 
-          // Quando todos os horários forem carregados
           if (carregados === horarios.length) {
             select.innerHTML = '<option value="" disabled selected>Escolha o horário</option>';
             opcoesAtivas.forEach(opt => {
@@ -176,17 +174,17 @@ function atualizarCamposPorTurnoERestaurante() {
 
             containerHorario.style.display = 'block';
           }
-        });
+        }).catch(err => console.error("Erro ao carregar horário:", err));
       });
     };
 
-    // ✅ Carrega imediatamente
     carregarHorarios();
 
-    // ✅ Escuta mudanças em tempo real em CADA horário para recarregar o select
+    // ✅ Escuta mudanças em tempo real corretamente
     horarios.forEach(horario => {
-      const unsubscribe = firebase.database().ref(`horarios/${restauranteKey}/${horario}`).on('value', carregarHorarios);
-      window.firebaseUnsubscribers.push(unsubscribe);
+      const ref = firebase.database().ref(`horarios/${restauranteKey}/${horario}`);
+      ref.on('value', carregarHorarios);
+      window.firebaseListeners.push({ ref, callback: carregarHorarios });
     });
   } else {
     containerHorario.style.display = 'none';
@@ -304,7 +302,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     // Se for Almoço, incrementa APENAS o contador por HORÁRIO.
     const db = firebase.database();
     const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
-    ref.transaction(current => (current || 0) + 1);
+    ref.transaction(current => (current || 0) + 1).catch(err => console.error("Erro na transação:", err));
     
   } else if (turno === "Janta") {
     // Se for Janta, incrementa o contador GERAL.
@@ -318,7 +316,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   // 🛑 FIM DA LÓGICA DE CONTADORES CORRIGIDA
 
   // Monta mensagem
-  const numeroWhatsApp = "55987443832";
+  const numeroWhatsApp = "5584987443832"; 
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
@@ -335,11 +333,14 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // ✅ Lógica de envio ultra-robusta para mobile (evita bloqueio de popup)
+  // Lógica de envio mais robusta (usando api.whatsapp.com que é mais compatível)
   const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensagem)}`;
   
-  // Redireciona diretamente na mesma aba para garantir que funcione em todos os celulares
-  window.location.href = whatsappUrl;
+  // Tenta abrir em nova aba, se falhar (bloqueador de popup), abre na mesma
+  const win = window.open(whatsappUrl, '_blank');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = whatsappUrl;
+  }
 });
 
 // Formatação de telefone
