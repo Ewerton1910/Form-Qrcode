@@ -9,7 +9,7 @@ firebase.initializeApp({
   databaseURL: "https://lanchonete-pedidos-default-rtdb.firebaseio.com",
   projectId: "lanchonete-pedidos",
   storageBucket: "lanchonete-pedidos.firebasestorage.app",
-  messagingSenderId: "5584987443832",
+  messagingSenderId: "558143780233",
   appId: "1:558143780233:web:2ddbbd6b5ef2dad6435d58"
 });
 
@@ -27,40 +27,17 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
 
 // ✅ Sincroniza dias da semana
 let diasAtivos = {
-  segunda: true,
   terca: true,
-  quarta: true,
-  quinta: true,
-  sexta: true
+  quinta: true
 };
 
-firebase.database().ref('dias/segunda').on('value', (snapshot) => {
-  const val = snapshot.val();
-  diasAtivos.segunda = (val === null) ? true : (val !== false);
-  atualizarOpcoesDias();
-});
-
 firebase.database().ref('dias/terca').on('value', (snapshot) => {
-  const val = snapshot.val();
-  diasAtivos.terca = (val === null) ? true : (val !== false);
-  atualizarOpcoesDias();
-});
-
-firebase.database().ref('dias/quarta').on('value', (snapshot) => {
-  const val = snapshot.val();
-  diasAtivos.quarta = (val === null) ? true : (val !== false);
+  diasAtivos.terca = snapshot.val() !== false;
   atualizarOpcoesDias();
 });
 
 firebase.database().ref('dias/quinta').on('value', (snapshot) => {
-  const val = snapshot.val();
-  diasAtivos.quinta = (val === null) ? true : (val !== false);
-  atualizarOpcoesDias();
-});
-
-firebase.database().ref('dias/sexta').on('value', (snapshot) => {
-  const val = snapshot.val();
-  diasAtivos.sexta = (val === null) ? true : (val !== false);
+  diasAtivos.quinta = snapshot.val() !== false;
   atualizarOpcoesDias();
 });
 
@@ -73,44 +50,39 @@ function atualizarOpcoesDias() {
   select.innerHTML = '<option value="" disabled selected>Escolha o dia</option>';
 
   // Adiciona dias ativos
-  const diasConfig = [
-    { key: 'segunda', value: '1', label: 'Segunda-Feira' },
-    { key: 'terca', value: '2', label: 'Terça-Feira' },
-    { key: 'quarta', value: '3', label: 'Quarta-Feira' },
-    { key: 'quinta', value: '4', label: 'Quinta-Feira' },
-    { key: 'sexta', value: '5', label: 'Sexta-Feira' }
-  ];
-
-  let algumAtivo = false;
-  diasConfig.forEach(dia => {
-    if (diasAtivos[dia.key]) {
-      const option = document.createElement('option');
-      option.value = dia.value;
-      option.textContent = dia.label;
-      select.appendChild(option);
-      algumAtivo = true;
-    }
-  });
+  if (diasAtivos.terca) {
+    const option = document.createElement('option');
+    option.value = "2";
+    option.textContent = "Terça-Feira";
+    select.appendChild(option);
+  }
+  if (diasAtivos.quinta) {
+    const option = document.createElement('option');
+    option.value = "4";
+    option.textContent = "Quinta-Feira";
+    select.appendChild(option);
+  }
 
   // Se nenhum dia estiver ativo
-  if (!algumAtivo) {
+  if (!diasAtivos.terca && !diasAtivos.quinta) {
     select.innerHTML = '<option value="" disabled selected>Nenhum dia disponível</option>';
   }
 }
 
-// Calcula próxima data de Segunda (1) a Sexta (5)
+// Calcula próxima data de Terça (2) ou Quinta (4)
 function calcularProximaData(diaSemana) {
   const hoje = new Date();
   const diaAtual = hoje.getDay();
   let diasParaAdicionar = 0;
 
-  // Lógica universal para qualquer dia da semana
-  if (diaAtual < diaSemana) {
-    diasParaAdicionar = diaSemana - diaAtual;
-  } else if (diaAtual === diaSemana) {
-    diasParaAdicionar = 7; // Próxima semana
-  } else {
-    diasParaAdicionar = (7 - diaAtual) + diaSemana;
+  if (diaSemana === 2) { // Terça
+    if (diaAtual < 2) diasParaAdicionar = 2 - diaAtual;
+    else if (diaAtual === 2) diasParaAdicionar = 7;
+    else diasParaAdicionar = 9 - diaAtual;
+  } else if (diaSemana === 4) { // Quinta
+    if (diaAtual < 4) diasParaAdicionar = 4 - diaAtual;
+    else if (diaAtual === 4) diasParaAdicionar = 7;
+    else diasParaAdicionar = 11 - diaAtual;
   }
 
   const data = new Date();
@@ -335,7 +307,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   // 🛑 FIM DA LÓGICA DE CONTADORES CORRIGIDA
 
   // Monta mensagem
-  const numeroWhatsApp = "558143780233"; 
+  const numeroWhatsApp = "559433272129";
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
@@ -352,14 +324,9 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
     `✅ Pedido registrado com sucesso!\n` +
     `📲 Entraremos em contato se houver alteração.`;
 
-  // Lógica de envio mais robusta (usando api.whatsapp.com que é mais compatível)
-  const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensagem)}`;
-  
-  // Tenta abrir em nova aba, se falhar (bloqueador de popup), abre na mesma
-  const win = window.open(whatsappUrl, '_blank');
-  if (!win || win.closed || typeof win.closed === 'undefined') {
-      window.location.href = whatsappUrl;
-  }
+  // ✅ Corrigido: removido espaço extra
+  window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURI(mensagem)}`, '_blank');
+  alert("Seu pedido será aberto no WhatsApp. Por favor, confirme o envio.");
 });
 
 // Formatação de telefone
