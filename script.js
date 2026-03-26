@@ -27,11 +27,8 @@ firebase.database().ref('servico/ativo').on('value', (snapshot) => {
 
 // ✅ Sincroniza dias da semana
 let diasAtivos = {
-  segunda: true,
   terca: true,
-  quarta: true,
-  quinta: true,
-  sexta: true
+  quinta: true
 };
 
 firebase.database().ref('dias/terca').on('value', (snapshot) => {
