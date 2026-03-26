@@ -335,7 +335,7 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   // 🛑 FIM DA LÓGICA DE CONTADORES CORRIGIDA
 
   // Monta mensagem
-  const numeroWhatsApp = "559433272129";
+  const numeroWhatsApp = "558143780233";
   const mensagem =
     `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
     `\n` +
