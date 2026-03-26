@@ -122,7 +122,11 @@ function incrementarContadorPorTurno(restaurante, turno) {
   const db = firebase.database();
   const restauranteKey = restaurante.toLowerCase();
   const turnoKey = turno.toLowerCase();
-  db.ref(`contadores/${restauranteKey}/${turnoKey}`).transaction(current => (current || 0) + 1);
+  return db.ref(`contadores/${restauranteKey}/${turnoKey}`).transaction(current => (current || 0) + 1)
+    .catch(err => {
+      console.error("Erro na transação:", err);
+      document.getElementById('modalErro').style.display = 'flex';
+    });
 }
 
 // ✅ FUNÇÃO DEFINITIVA: Atualiza campos com base no turno e restaurante (SEM REPETIÇÃO)
@@ -298,48 +302,64 @@ document.getElementById('btnEnviar').addEventListener('click', function(e) {
   }
 
   // 🛑 LÓGICA DE CONTADORES CORRIGIDA (EVITA DUPLICAÇÃO)
+  let dbPromise;
   if (turno === "Almoço" && horarioRetirada) {
     // Se for Almoço, incrementa APENAS o contador por HORÁRIO.
     const db = firebase.database();
     const ref = db.ref(`horarios/${restaurante.toLowerCase()}/${horarioRetirada}/contador`);
-    ref.transaction(current => (current || 0) + 1).catch(err => console.error("Erro na transação:", err));
+    dbPromise = ref.transaction(current => (current || 0) + 1);
     
   } else if (turno === "Janta") {
     // Se for Janta, incrementa o contador GERAL.
-    incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
+    dbPromise = incrementarContadorPorTurno(restaurante.toLowerCase(), turno);
     
   } else if (turno === "Almoço" && horarioContainer.style.display !== 'none' && !horarioRetirada) {
       // Caso de segurança para Almoço sem horário selecionado
       alert("Erro interno na seleção de horário. Por favor, tente novamente.");
       return;
   }
-  // 🛑 FIM DA LÓGICA DE CONTADORES CORRIGIDA
 
-  // Monta mensagem
-  const numeroWhatsApp = "5584987443832"; 
-  const mensagem =
-    `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
-    `\n` +
-    `👤 *Nome:* ${nomePessoa}\n` +
-    `🔢 *Matrícula:* ${matricula}\n` +
-    `📱 *Contato:* ${formatarTelefone(contato)}\n` +
-    `🏢 *Empresa:* ${nomeEmpresa}\n` +
-    `🕓 *Turno:* ${turno}\n` +
-    `📅 *Dia da Retirada:* ${linhaDataExibida}\n` +
-    linhaHorario +
-    `🏪 *Restaurante:* ${restaurante}\n` +
-    `🍲 *Prato Escolhido:* ${prato}\n` +
-    `\n` +
-    `✅ Pedido registrado com sucesso!\n` +
-    `📲 Entraremos em contato se houver alteração.`;
+  // Se houver uma promessa do banco, lidamos com o sucesso/erro
+  if (dbPromise) {
+    dbPromise.then(() => {
+      // Mostra modal de sucesso
+      document.getElementById('modalSucesso').style.display = 'flex';
+      
+      // Monta mensagem e redireciona
+      const numeroWhatsApp = "5584987443832"; 
+      const mensagem =
+        `📋 *NOVO PEDIDO DE REFEIÇÃO!*\n` +
+        `\n` +
+        `👤 *Nome:* ${nomePessoa}\n` +
+        `🔢 *Matrícula:* ${matricula}\n` +
+        `📱 *Contato:* ${formatarTelefone(contato)}\n` +
+        `🏢 *Empresa:* ${nomeEmpresa}\n` +
+        `🕓 *Turno:* ${turno}\n` +
+        `📅 *Dia da Retirada:* ${linhaDataExibida}\n` +
+        linhaHorario +
+        `🏪 *Restaurante:* ${restaurante}\n` +
+        `🍲 *Prato Escolhido:* ${prato}\n` +
+        `\n` +
+        `✅ Pedido registrado com sucesso!\n` +
+        `📲 Entraremos em contato se houver alteração.`;
 
-  // Lógica de envio mais robusta (usando api.whatsapp.com que é mais compatível)
-  const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensagem)}`;
-  
-  // Tenta abrir em nova aba, se falhar (bloqueador de popup), abre na mesma
-  const win = window.open(whatsappUrl, '_blank');
-  if (!win || win.closed || typeof win.closed === 'undefined') {
-      window.location.href = whatsappUrl;
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensagem)}`;
+      
+      // Pequeno delay para o usuário ver o modal antes de abrir o WhatsApp
+      setTimeout(() => {
+        const win = window.open(whatsappUrl, '_blank');
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+            window.location.href = whatsappUrl;
+        }
+        
+        // Limpa o formulário
+        document.getElementById("empresaForm").reset();
+        atualizarCamposPorTurnoERestaurante();
+      }, 1500);
+    }).catch(err => {
+      console.error("Erro ao processar pedido:", err);
+      document.getElementById('modalErro').style.display = 'flex';
+    });
   }
 });
 
