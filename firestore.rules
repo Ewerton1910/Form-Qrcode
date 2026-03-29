@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: pedidos
+    // Document ID: auto-generated
+    // Fields:
+    //   - nomePessoa: string (required)
+    //   - matricula: string (required)
+    //   - nomeEmpresa: string (required)
+    //   - turno: string (required, enum: Almoço, Janta)
+    //   - contato: string (required)
+    //   - prato: string (required)
+    //   - restaurante: string (required, enum: Central, Campo)
+    //   - diaRetirada: string (required)
+    //   - horarioRetirada: string (optional)
+    //   - status: string (required, enum: pendente, concluido)
+    //   - createdAt: string (required, format: date-time)
+    //
+    // Collection: configuracoes
+    // Document ID: servico
+    // Fields:
+    //   - ativo: boolean (required)
+    //
+    // Collection: dias
+    // Document ID: segunda, terca, quarta, quinta, sexta
+    // Fields:
+    //   - ativo: boolean (required)
+    //
+    // Collection: horarios
+    // Document ID: restaurante_horario (ex: central_10:30)
+    // Fields:
+    //   - ativo: boolean (required)
+    //   - contador: number (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "restaurantegrsa@gmail.com" || 
+         request.auth.token.email == "restaurantegrs@gmail.com" || 
+         request.auth.token.email == "ewerton.jhonatas@gmail.com");
+    }
+
+    function isValidPedido(data) {
+      return data.nomePessoa is string && data.nomePessoa.size() > 0 && data.nomePessoa.size() < 100 &&
+             data.matricula is string && data.matricula.size() > 0 && data.matricula.size() < 20 &&
+             data.nomeEmpresa is string && data.nomeEmpresa.size() > 0 && data.nomeEmpresa.size() < 100 &&
+             data.turno in ['Almoço', 'Janta'] &&
+             data.contato is string && data.contato.size() >= 10 && data.contato.size() <= 15 &&
+             data.prato is string && data.prato.size() > 0 && data.prato.size() < 50 &&
+             data.restaurante in ['Central', 'Campo'] &&
+             data.diaRetirada is string && data.diaRetirada.size() > 0 &&
+             data.status in ['pendente', 'concluido'] &&
+             data.createdAt is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /pedidos/{pedidoId} {
+      allow create: if isValidPedido(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /configuracoes/{configId} {
+      allow read: if true;
+      allow write: if isAdmin() || request.resource.data.setupKey == "l4nch0n3t3-2025!";
+    }
+
+    match /dias/{diaId} {
+      allow read: if true;
+      allow write: if isAdmin() || request.resource.data.setupKey == "l4nch0n3t3-2025!";
+    }
+
+    match /horarios/{horarioId} {
+      allow read: if true;
+      allow write: if isAdmin() || request.resource.data.setupKey == "l4nch0n3t3-2025!";
+      // Allow atomic increment for public
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['contador']) &&
+                       request.resource.data.contador == resource.data.contador + 1;
+    }
+
+    match /contadores/{restauranteId} {
+      allow read: if true;
+      allow write: if isAdmin() || request.resource.data.setupKey == "l4nch0n3t3-2025!";
+    }
+    
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
