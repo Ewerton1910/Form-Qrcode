@@ -195,9 +195,9 @@ export default function AdminPanel() {
           </div>
 
           <div className="admin-actions-grid">
-            <button className="btn btn-success" onClick={() => toggleServico(true)}>
+            {/*<button className="btn btn-success" onClick={() => toggleServico(true)}>
               <Check size={18} /> Ativar Pedidos
-            </button>
+            </button>*/}
             <button className="btn btn-danger" onClick={() => toggleServico(false)}>
               <X size={18} /> Desativar Pedidos
             </button>
