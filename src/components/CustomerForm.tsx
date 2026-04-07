@@ -47,7 +47,7 @@ export default function CustomerForm() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         // Se o usuário já estiver logado e for um dos emails permitidos, podemos redirecionar ou apenas permitir o acesso
-        const allowedEmails = ["restaurantegrsa@gmail.com", "restaurantegrs@gmail.com", "ewerton.jhonatas@gmail.com"];
+        const allowedEmails = /*["restaurantegrsa@gmail.com", "restaurantegrs@gmail.com", "ewerton.jhonatas@gmail.com"];*/
         if (allowedEmails.includes(user.email || "")) {
           // Opcional: Redirecionar automaticamente se já estiver logado?
           // Talvez seja melhor deixar o botão de login manual
