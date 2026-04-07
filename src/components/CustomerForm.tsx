@@ -272,12 +272,12 @@ export default function CustomerForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <button 
+      {/*<button 
         onClick={() => setShowLogin(true)}
         className="btn-admin-fixed"
       >
         <Lock size={16} /> Painel Admin
-      </button>
+      </button>*/}
 
       <div className="container">
         <h1>🍽️ Escolha sua refeição</h1>
