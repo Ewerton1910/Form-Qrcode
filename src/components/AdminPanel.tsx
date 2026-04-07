@@ -37,7 +37,7 @@ export default function AdminPanel() {
       if (!user) {
         navigate("/");
       } else {
-        const allowedEmails = ["restaurantegrsa@gmail.com", "restaurantegrs@gmail.com", "ewerton.jhonatas@gmail.com"];
+        const allowedEmails = /*["restaurantegrsa@gmail.com", "restaurantegrs@gmail.com", "ewerton.jhonatas@gmail.com"]*/;
         if (!allowedEmails.includes(user.email || "")) {
           alert("Acesso negado.");
           auth.signOut();
